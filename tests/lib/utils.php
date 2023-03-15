@@ -1,14 +1,15 @@
 <?php
 
-require_once __DIR__ . '/client.php';
+require_once __DIR__.'/client.php';
 
-class TestUtils {
-
+class TestUtils
+{
     public $serviceRoleApiClient;
     public $GOTRUE_JWT_SECRET;
     public $faker;
 
-    public function __construct() {
+    public function __construct()
+    {
         $client = new TestClient();
         $this->serviceRoleApiClient = $client->serviceRoleApiClient;
         $this->GOTRUE_JWT_SECRET = $client->GOTRUE_JWT_SECRET;
@@ -17,8 +18,8 @@ class TestUtils {
         $this->faker->addProvider(new Faker\Provider\en_US\PhoneNumber($faker));
     }
 
-    public function mockAccessToken() {
-
+    public function mockAccessToken()
+    {
         $tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::default()));
 
         $this->GOTRUE_JWT_SECRET = $tokenBuilder
@@ -28,53 +29,59 @@ class TestUtils {
             ->toString();
     }
 
-    public function mockEmail() {
+    public function mockEmail()
+    {
         return $this->faker->email;
     }
 
-    public function mockUserCredentials($opts = []) {
-        if(!isset($opts['email'])) {
+    public function mockUserCredentials($opts = [])
+    {
+        if (!isset($opts['email'])) {
             $opts['email'] = $this->faker->email;
         }
 
-        if(!isset($opts['password'])) {
+        if (!isset($opts['password'])) {
             $opts['password'] = $this->faker->password;
         }
 
-        if(!isset($opts['phone'])) {
+        if (!isset($opts['phone'])) {
             $opts['phone'] = $this->faker->phoneNumber;
         }
 
         return [
-            'email' => $opts['email'],
+            'email'    => $opts['email'],
             'password' => $opts['password'],
-            'phone' => $opts['phone']
+            'phone'    => $opts['phone'],
         ];
     }
 
-    public function mockVerificationOTP() {
+    public function mockVerificationOTP()
+    {
         return $this->faker->randomNumber(6);
     }
 
-    public function mockUserMetadata() {
+    public function mockUserMetadata()
+    {
         return [
             'profile_image' => $this->faker->gravatarUrl(),
         ];
     }
 
-    public function mockAppMetaData() {
+    public function mockAppMetaData()
+    {
         return [
-            'roles' => ['editor', 'publisher']
+            'roles' => ['editor', 'publisher'],
         ];
     }
 
-    public function createNewUserWithEmail($opts) {
+    public function createNewUserWithEmail($opts)
+    {
         $mockedCredentials = $this->mockUserCredentials($opts);
 
         return $this->serviceRoleApiClient->createUser([
-            'email' => $mockedCredentials['email'],
+            'email'    => $mockedCredentials['email'],
             'password' => $mockedCredentials['password'],
-            'data' => [],
+            'data'     => [],
         ]);
     }
 }

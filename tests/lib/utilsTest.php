@@ -1,10 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 
 require 'vendor/autoload.php';
 
-class TestUtilTest extends TestCase {
-    public function testMockUserCredentials(): void {
+class TestUtilTest extends TestCase
+{
+    public function testMockUserCredentials(): void
+    {
         $utils = new TestUtils();
         $result = $utils->mockUserCredentials();
         $this->assertArrayHasKey('email', $result);
@@ -21,7 +25,8 @@ class TestUtilTest extends TestCase {
         $this->assertGreaterThan(0, strlen($result['password']));
     }
 
-    public function testCreateNewUserWithEmail(): void {
+    public function testCreateNewUserWithEmail(): void
+    {
         $utils = new TestUtils();
         $email = $utils->mockEmail();
         $result = $utils->createNewUserWithEmail(['email' => $email]);
@@ -33,7 +38,8 @@ class TestUtilTest extends TestCase {
         $this->assertEquals($email, $result->data->user->email);
     }
 
-    public function testMockUserMetadata(): void {
+    public function testMockUserMetadata(): void
+    {
         $utils = new TestUtils();
         $result = $utils->mockUserMetadata();
 
@@ -42,7 +48,8 @@ class TestUtilTest extends TestCase {
         $this->expectMatchesRegularExpression('/.*gravatar.com\/avatar\/.*/', $result['profile_image']);
     }
 
-    public function testMockAppMetaData(): void {
+    public function testMockAppMetaData(): void
+    {
         $utils = new TestUtils();
         $result = $utils->mockAppMetaData();
 

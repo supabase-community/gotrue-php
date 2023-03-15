@@ -5,7 +5,8 @@ namespace Supabase\GoTrue;
 use Supabase\Util\Constants;
 use Supabase\Util\Storage;
 
-class GoTrueClient {
+class GoTrueClient
+{
     protected $stateChangeEmitters;
     protected $networkRetries = 0;
     protected $refreshingDeferred;
@@ -21,8 +22,8 @@ class GoTrueClient {
     protected $url;
     protected $headers;
 
-    public function __construct($options) {
-
+    public function __construct($options)
+    {
         $this->settings = array_merge(Constants::getDefaultHeaders(), $options);
 
         echo $this->settings['url'];
@@ -33,13 +34,13 @@ class GoTrueClient {
         $this->detectSessionInUrl = $this->settings['detectSessionInUrl'] ?? false;
         $this->url = $this->settings['url'];
 
-        if(!$this->url) {
+        if (!$this->url) {
             throw new \Exception('No URL provided');
         }
 
         $this->headers = $this->settings['headers'] ?? null;
         $this->admin = new GoTrueAdminApi([
-            'url' => $this->url,
+            'url'     => $this->url,
             'headers' => $this->headers,
         ]);
         $this->storage = new Storage();
@@ -47,33 +48,34 @@ class GoTrueClient {
         $this->initializePromise = $this->initialize();
     }
 
-    public function initialize() {
-        if(!$this->initializePromise) {
+    public function initialize()
+    {
+        if (!$this->initializePromise) {
             $this->initializePromise = $this->_initialize();
         }
 
         return $this->initializePromise;
     }
 
-    public function _initialize() {
-        if($this->initializePromise) {
+    public function _initialize()
+    {
+        if ($this->initializePromise) {
             return $this->initializePromise;
         }
 
-        if($this->detectSessionInUrl && $this->_isImplicitGrantFlow()) {
-            $data;
+        if ($this->detectSessionInUrl && $this->_isImplicitGrantFlow()) {
             try {
                 $data = $this->_getSessionFromUrl();
             } catch(\Exception $e) {
-                return [ 'error' => $e ];
+                return ['error' => $e];
             }
 
             $session = $data->session;
-            
+
             $this->_saveSession($session);
             $this->_notifyAllSubscribers('SIGNED_IN', $session);
 
-            if($data->redirectType == 'recovery') {
+            if ($data->redirectType == 'recovery') {
                 $this->_notifyAllSubscribers('PASSWORD_RECOVERY', $session);
             }
 
@@ -85,49 +87,47 @@ class GoTrueClient {
         return ['error' => null];
     }
 
-    private function _recoverAndRefresh() {
-
+    private function _recoverAndRefresh()
+    {
     }
 
-    private function _removeSession() {
-
+    private function _removeSession()
+    {
     }
 
-    public function signUp($credentials) {
-
+    public function signUp($credentials)
+    {
         try {
             $this->_removeSession();
-            $res;
-            if(isset($credentials->email)) {
-                $res = _request('POST', $this->url . '/signup', [
-                    'body' => [
-                        'email' => $credentials->email,
-                        'password' => $credentials->password,
-                        'data' => $credentials->data,
-                        'gotrue_meta_security' => [ 
-                            'captcha_token' => (isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null) 
-                        ]
-                    ],
-                    'headers' => $this->headers,
-                ]);
 
-                return sessionResponse($res);
-
-            } else if(isset($credentials->phone)) {
-                $res = _request('POST', $this->url . '/signup', [
+            if (isset($credentials->email)) {
+                $res = _request('POST', $this->url.'/signup', [
                     'body' => [
-                        'phone' => $credentials->phone,
-                        'password' => $credentials->password,
-                        'data' => $credentials->data,
+                        'email'                => $credentials->email,
+                        'password'             => $credentials->password,
+                        'data'                 => $credentials->data,
                         'gotrue_meta_security' => [
-                             'captcha_token' => (isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null)
-                        ]
+                            'captcha_token' => (isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null),
+                        ],
                     ],
                     'headers' => $this->headers,
                 ]);
 
                 return sessionResponse($res);
+            } elseif (isset($credentials->phone)) {
+                $res = _request('POST', $this->url.'/signup', [
+                    'body' => [
+                        'phone'                => $credentials->phone,
+                        'password'             => $credentials->password,
+                        'data'                 => $credentials->data,
+                        'gotrue_meta_security' => [
+                            'captcha_token' => (isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null),
+                        ],
+                    ],
+                    'headers' => $this->headers,
+                ]);
 
+                return sessionResponse($res);
             } else {
                 throw new AuthInvalidCredentialsError('You must provide either an email or phone number and a password');
             }
@@ -135,57 +135,58 @@ class GoTrueClient {
             $error = $res->error;
             $data = $res->data;
 
-            if($error || !$data) {
-                return [ 'data' => [ 'user' => null, 'session' => null ], 'error' => $error ];
+            if ($error || !$data) {
+                return ['data' => ['user' => null, 'session' => null], 'error' => $error];
             }
 
             $session = $data->session;
             $user = $data->user;
 
-            if($data->session) {
+            if ($data->session) {
                 $this->_saveSession($session);
                 $this->_notifyAllSubscribers('SIGNED_IN', $session);
             }
 
-            return [ 'data' => [ 'user' => $user, 'session' => $session ], 'error' => $error ];
+            return ['data' => ['user' => $user, 'session' => $session], 'error' => $error];
         } catch(\Exception $e) {
-            if(isAuthError($e)) {
-                return [ 'data' => [ 'user' => null, 'session' => null ], 'error' => $e ];
+            if (isAuthError($e)) {
+                return ['data' => ['user' => null, 'session' => null], 'error' => $e];
             }
 
             throw $e;
         }
     }
 
-    public function signInWithPassword($credentials) {
+    public function signInWithPassword($credentials)
+    {
         try {
             $this->_removeSession();
-            $res;
-            if(isset($credentials->email)) {
-                $res = _request('POST', $this->url . '/token?grant_type=password', [
+
+            if (isset($credentials->email)) {
+                $res = _request('POST', $this->url.'/token?grant_type=password', [
                     'body' => [
-                        'email' => $credentials->email,
-                        'password' => $credentials->password,
-                        'data' => $credentials->data,
-                        'gotrue_meta_security' => [ 
-                            'captcha_token' => isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null 
-                        ]
+                        'email'                => $credentials->email,
+                        'password'             => $credentials->password,
+                        'data'                 => $credentials->data,
+                        'gotrue_meta_security' => [
+                            'captcha_token' => isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null,
+                        ],
                     ],
                     'headers' => $this->headers,
-                    'xform' => _sessionResponse,
+                    'xform'   => _sessionResponse,
                 ]);
-            } else if(isset($credentials->phone)) {
-                $res = _request('POST', $this->url . '/token?grant_type=password', [
+            } elseif (isset($credentials->phone)) {
+                $res = _request('POST', $this->url.'/token?grant_type=password', [
                     'body' => [
-                        'phone' => $credentials->phone,
-                        'password' => $credentials->password,
-                        'data' => $credentials->data,
-                        'gotrue_meta_security' => [ 
-                            'captcha_token' => isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null 
-                        ]
+                        'phone'                => $credentials->phone,
+                        'password'             => $credentials->password,
+                        'data'                 => $credentials->data,
+                        'gotrue_meta_security' => [
+                            'captcha_token' => isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null,
+                        ],
                     ],
                     'headers' => $this->headers,
-                    'xform' => _sessionResponse,
+                    'xform'   => _sessionResponse,
                 ]);
             } else {
                 throw new AuthInvalidCredentialsError('You must provide either an email or phone number and a password');
@@ -194,20 +195,18 @@ class GoTrueClient {
             $session = $data->session;
             $user = $data->user;
 
-            if($data->session) {
+            if ($data->session) {
                 $this->_saveSession($session);
                 $this->_notifyAllSubscribers('SIGNED_IN', $session);
             }
 
-            return [ 'data' => [ 'user' => $user, 'session' => $session ], 'error' => $error ];
-            
+            return ['data' => ['user' => $user, 'session' => $session], 'error' => $error];
         } catch(\Exception $e) {
-            if(isAuthError($e)) {
-                return [ 'data' => [ 'user' => null, 'session' => null ], 'error' => $e ];
+            if (isAuthError($e)) {
+                return ['data' => ['user' => null, 'session' => null], 'error' => $e];
             }
 
             throw $e;
         }
-
     }
 }

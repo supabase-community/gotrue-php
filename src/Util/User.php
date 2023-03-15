@@ -1,6 +1,7 @@
 <?php
 
-class User {
+class User
+{
     public string $id;
     public UserAppMetadata $app_metadata;
     public UserMetadata $user_metadata;
@@ -23,7 +24,8 @@ class User {
     public ?UserIdentity $identities;
     public ?string $factors;
 
-    public function __construct($data) {
+    public function __construct($data)
+    {
         $this->id = $data->id;
         $this->app_metadata = new UserAppMetadata($data->app_metadata);
         $this->user_metadata = new UserMetadata($data->user_metadata);
