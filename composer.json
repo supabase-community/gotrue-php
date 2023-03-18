@@ -1,5 +1,9 @@
 {
     "name": "jordan/gotrue-php",
+    "type": "library",
+    "description": "Supabase GoTrue for PHP",
+    "keywords": ["supabase","gotrue", "gotrue-php"],
+    "homepage": "https://github.com/zero-copy-labs/gotrue-php",
     "autoload": {
         "psr-0": { "": "src/" },
         "psr-4": {
@@ -10,6 +14,18 @@
         {
             "name": "jordan",
             "email": "jordan@ascensionengineer.com"
+        },
+        {
+            "name": "norm",
+            "email": "norm@zerocopylabs.com"
+        },
+        {
+            "name": "Adolfo",
+            "email": "adolfo@zerocopylabs.com"
+        },
+        {
+            "name": "Luis",
+            "email": "luis@zerocopylabs.com"
         }
     ],
     "require-dev": {
@@ -21,6 +37,7 @@
         "allure-framework/allure-phpunit": "^2",
         "lcobucci/jwt": "^4.2",
         "guzzlehttp/guzzle": "^7.5",
-        "fzaninotto/faker": "^1.5"
+        "fzaninotto/faker": "^1.5",
+        "vlucas/phpdotenv": "5.5"
     }
 }

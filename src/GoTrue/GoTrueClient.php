@@ -100,11 +100,11 @@ class GoTrueClient
         try {
             $this->_removeSession();
 
-            if (isset($credentials->email)) {
+            if (isset($credentials['email'])) {
                 $res = _request('POST', $this->url.'/signup', [
                     'body' => [
-                        'email'                => $credentials->email,
-                        'password'             => $credentials->password,
+                        'email'                => $credentials['email'],
+                        'password'             => $credentials['password'],
                         'data'                 => $credentials->data,
                         'gotrue_meta_security' => [
                             'captcha_token' => (isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null),

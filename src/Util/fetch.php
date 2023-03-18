@@ -1,10 +1,10 @@
 <?php
 
-require 'vendor/autoload.php';
+//require 'vendor/autoload.php';
 
 function handleError($err) {
     if($err->hasResponse() === false) {
-        return $err
+        return $err;
     }
 
     $errResponse = $err->getResponse();
@@ -26,27 +26,27 @@ function getRequestParams($method, $options, $params, $body) {
         return $_params;
     }
 
-    $_params->headers = array_merge($params->headers, [ 'Content-Type' => 'application/json;charset=UTF-8' ]);
-    $_params->body = json_encode($body);
+    $_params['headers'] = array_merge($params['headers'], [ 'Content-Type' => 'application/json;charset=UTF-8' ]);
+    $_param['body'] = json_encode($body);
     return array_merge($_params, $params);
 }
 
 function _request($method, $url, $options) {
-    $_a;
+    $_a="";
     $headers = (isset($options) && isset($options->headers) ? $options->headers : []);
     if(isset($options)) {
-        $headers->Authorization = 'Bearer ' . $options->jwt;
+        $headers['Authorization'] = 'Bearer ' . $options['headers'];
     }
 
-    $qs = ($_a = isset($options) == false ? null : $options->query) !== null && $_a !== void 0 ? $_a : [];
+    $qs = ($_a = isset($options) == false ? null : $options->query) !== null && $_a != 0 ? $_a : [];
 
     if(isset($options) == false || isset($options->redirectTo) == false) {
         $qs->redirectTo = $options->redirectTo;
     }
 
     $queryString = generateQueryString($qs);
-    $data = _handleRequest($fetcher, $method, $url . $queryString, $options);
-    return (isset(options) ? null : options.xform) ? isset(options) ? false : options.xform(data) : { 'data' => $data, 'error' => null };
+    //$data = _handleRequest($fetcher, $method, $url . $queryString, $options);
+    //return (isset(options) ? null : options.xform) ? isset(options) ? false : options.xform(data) : ['data' => $data, 'error' => null ];
 }
 
 function _handleRequest($fetcher, $method, $url, $options, $params, $body) {
@@ -62,7 +62,7 @@ function _handleRequest($fetcher, $method, $url, $options, $params, $body) {
         $response = $promise->wait();
 
         if(!$response->ok) {
-            throw $response
+            throw $response;
         }
 
         if(isset($options) && isset($options->noResolveJson) && $options->noResolveJson) {
@@ -85,7 +85,7 @@ function _ssoResponse($data) {
 }
 
 function generateQueryString($params) {
-    $qs = ''
+    $qs = '';
     if (count($params) > 0) {
         $qs .= '?' . implode('&', array_map(function($item) {
             return $item[0] . '=' . $item[1];
@@ -96,20 +96,20 @@ function generateQueryString($params) {
 }
 
 function sessionResponse($data) {
-    $_a;
+    $_a="";
     $session = null;
     if(hasSession($data)) {
         $session = $data;
-        $session->expires_at = expiresAt($data->expires_in);
+        $session->expires_at = $data->expires_in;
     }
 
-    $user = ($_a = $data->user) !== null && $_a !== void 0 ? $_a : null;
+    $user = ($_a = $data->user) !== null && $_a != 0 ? $_a : null;
     return [ 'data' => [ 'user' => $user, 'session' => $session ], 'error' => null ];
 }
 
 function userResponse($data) {
-    $_a;
-    $user = ($_a = $data->user) !== null && $_a !== void 0 ? $_a : null;
+    $_a="";
+    $user = ($_a = $data->user) !== null && $_a !== 0 ? $_a : null;
     return [ 'data' => [ 'user' => $user ], 'error' => null ];
 }
 
@@ -127,12 +127,12 @@ function generateLinkResponse($data) {
         'hashed_token' => $data->hashed_token,
         'redirect_to' => $data->redirect_to,
         'verification_type' => $data->verification_type
-    ]
+    ];
 
     return [
         'data' => [
-            'properties' => $properties
-            'user' => $user
+            'properties' => $properties,
+            'user' => $user,
         ],
         'error' => null,
     ];
