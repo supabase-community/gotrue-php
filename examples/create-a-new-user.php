@@ -8,13 +8,13 @@ $domain = 'localhost:3000';
 $path = '/auth/v1';
 
 $client = new GoTrueClient([
-    'url'              => 'https://gpdefvsxamnscceccczu.supabase.co/auth/v1',
-    'autoRefreshToken' => false,
-    'persistSession'   => true,
+    'url'                => 'https://gpdefvsxamnscceccczu.supabase.co/auth/v1',
+    'autoRefreshToken'   => false,
+    'persistSession'     => true,
     'storageKey'         => $api_key,
 ]);
 
 $client->signUp([
-    'email'=> 'example@email.com',
+    'email'   => 'example@email.com',
     'password'=> 'example-password',
-  ]);
+]);
