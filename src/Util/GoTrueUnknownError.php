@@ -2,12 +2,12 @@
 
 namespace Supabase\Util;
 
-class PostgrestUnknownError extends PostgrestError
+class GoTrueUnknownError extends GoTrueError
 {
     public function __construct($message, $originalError)
     {
         parent::__construct($message);
-        $this->name = 'PostgrestUnknownError';
+        $this->name = 'GoTrueUnknownError';
         $this->originalError = $originalError;
     }
 }

@@ -2,18 +2,18 @@
 
 namespace Supabase\Util;
 
-class PostgrestError extends \Exception
+class GoTrueError extends \Exception
 {
-    protected bool $isPostgrestError = true;
+    protected bool $isGoTrueError = true;
 
     public function __construct($message)
     {
         parent::__construct($message);
-        $this->name = 'PostgrestError';
+        $this->name = 'GoTrueError';
     }
 
-    public static function isPostgrestError($e)
+    public static function isGoTrueError($e)
     {
-        return $e != null && isset($e->isPostgrestError);
+        return $e != null && isset($e->isGoTrueError);
     }
 }

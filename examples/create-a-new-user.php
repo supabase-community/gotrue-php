@@ -14,7 +14,9 @@ $client = new GoTrueClient([
     'storageKey'         => $api_key,
 ]);
 
-$client->signUp([
+$response = $client->signUp([
     'email'   => 'example@email.com',
     'password'=> 'example-password',
 ]);
+//$output = json_decode($response['error']->getBody(), true);
+print_r($response['error']->getMessage());

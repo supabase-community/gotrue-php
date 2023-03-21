@@ -1,9 +1,11 @@
 <?php
 
 namespace Supabase\GoTrue;
-
+use Psr\Http\Message\ResponseInterface;
 use Supabase\Util\Constants;
 use Supabase\Util\Storage;
+use Supabase\Util\Request;
+use Supabase\Util\GoTrueError;
 
 class GoTrueClient
 {
@@ -87,6 +89,11 @@ class GoTrueClient
         return ['error' => null];
     }
 
+    public function __request($method, $url, $headers, $body = null): ResponseInterface
+	{
+		return Request::request($method, $url, $headers, $body);
+	}
+
     private function _recoverAndRefresh()
     {
     }
@@ -101,19 +108,19 @@ class GoTrueClient
             $this->_removeSession();
 
             if (isset($credentials['email'])) {
-                $res = _request('POST', $this->url.'/signup', [
+                $data = $this->__request('POST', $this->url.'/signup', [
                     'body' => [
                         'email'                => $credentials['email'],
                         'password'             => $credentials['password'],
-                        'data'                 => $credentials->data,
+                        'data'                 => isset($credentials['data']) ? $credentials['data'] : [],
                         'gotrue_meta_security' => [
-                            'captcha_token' => (isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null),
+                            //'captcha_token' => (isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null),
                         ],
                     ],
                     'headers' => $this->headers,
                 ]);
 
-                return sessionResponse($res);
+                return sessionResponse($data);
             } elseif (isset($credentials->phone)) {
                 $res = _request('POST', $this->url.'/signup', [
                     'body' => [
@@ -149,7 +156,7 @@ class GoTrueClient
 
             return ['data' => ['user' => $user, 'session' => $session], 'error' => $error];
         } catch(\Exception $e) {
-            if (isAuthError($e)) {
+            if (GoTrueError::isGoTrueError($e)) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $e];
             }
 
