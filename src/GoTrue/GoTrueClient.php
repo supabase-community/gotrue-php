@@ -1,11 +1,12 @@
 <?php
 
 namespace Supabase\GoTrue;
+
 use Psr\Http\Message\ResponseInterface;
 use Supabase\Util\Constants;
-use Supabase\Util\Storage;
-use Supabase\Util\Request;
 use Supabase\Util\GoTrueError;
+use Supabase\Util\Request;
+use Supabase\Util\Storage;
 
 class GoTrueClient
 {
@@ -90,9 +91,9 @@ class GoTrueClient
     }
 
     public function __request($method, $url, $headers, $body = null): ResponseInterface
-	{
-		return Request::request($method, $url, $headers, $body);
-	}
+    {
+        return Request::request($method, $url, $headers, $body);
+    }
 
     private function _recoverAndRefresh()
     {
