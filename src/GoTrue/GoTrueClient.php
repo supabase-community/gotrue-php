@@ -25,26 +25,22 @@ class GoTrueClient
     protected $url;
     protected $headers;
 
-    public function __construct($reference_id, $api_key, $options = [], $domain = '', $scheme = '', $path = '')
+    public function __construct($reference_id, $api_key, $options = [], $domain = 'supabase.co', $scheme = 'https', $path = '/auth/v1')
     {
         $headers = ['Authorization' => "Bearer {$api_key}", 'apikey'=>$api_key];
         $this->url = !empty($reference_id) ? "{$scheme}://{$reference_id}.{$domain}{$path}" : "{$scheme}://{$domain}{$path}";
         $this->settings = array_merge(Constants::getDefaultHeaders(), $options);
-
-        echo $this->settings['url'];
-
         $this->storageKey = $this->settings['storageKey'] ?? null;
         $this->autoRefreshToken = $this->settings['autoRefreshToken'];
         $this->persistSession = $this->settings['persistSession'];
         $this->detectSessionInUrl = $this->settings['detectSessionInUrl'] ?? false;
-        //$this->url = $this->settings['url'];
 
         if (!$this->url) {
             throw new \Exception('No URL provided');
         }
 
         $this->headers = $headers ?? null;
-        $this->admin = new GoTrueAdminApi([
+        $this->admin = new GoTrueAdminApi($reference_id, $api_key,[
             'url'     => $this->url,
             'headers' => $this->headers,
         ]);
@@ -122,18 +118,12 @@ class GoTrueClient
             $status = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
             $error = null;
-
-            print_r($status);
-
-            //$error = $res->error;
-            //$data = $res->data;
+           
             if ($status != 200) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $response];
             }
 
             $data = json_decode($response->getBody(), true);
-
-            //print_r($data);
 
             $session = isset($data['session']) ? $data['session'] : null;
             $user = $data;
@@ -157,48 +147,79 @@ class GoTrueClient
     {
         try {
             $this->_removeSession();
-
-            if (isset($credentials->email)) {
-                $res = _request('POST', $this->url.'/token?grant_type=password', [
-                    'body' => [
-                        'email'                => $credentials->email,
-                        'password'             => $credentials->password,
-                        'data'                 => $credentials->data,
-                        'gotrue_meta_security' => [
-                            'captcha_token' => isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null,
-                        ],
-                    ],
-                    'headers' => $this->headers,
-                    'xform'   => _sessionResponse,
-                ]);
-            } elseif (isset($credentials->phone)) {
-                $res = _request('POST', $this->url.'/token?grant_type=password', [
-                    'body' => [
-                        'phone'                => $credentials->phone,
-                        'password'             => $credentials->password,
-                        'data'                 => $credentials->data,
-                        'gotrue_meta_security' => [
-                            'captcha_token' => isset($credentials->options->captchaToken) ? $credentials->options->captchaToken : null,
-                        ],
-                    ],
-                    'headers' => $this->headers,
-                    'xform'   => _sessionResponse,
-                ]);
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
+            $body = json_encode($credentials);
+            if (isset($credentials['email'])) {
+                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
+            } elseif (isset($credentials['phone'])) {
+                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
             } else {
-                throw new AuthInvalidCredentialsError('You must provide either an email or phone number and a password');
+                throw new GoTrueError('You must provide either an email or phone number and a password');
             }
 
-            $session = $data->session;
-            $user = $data->user;
+            $status = $response->getStatusCode();
+            $statusText = $response->getReasonPhrase();
+            $error = null;
+           
+            if ($status != 200) {
+                return ['data' => ['user' => null, 'session' => null], 'error' => $response];
+            }
 
-            if ($data->session) {
+            $data = json_decode($response->getBody(), true);
+
+            $session = isset($data['session']) ? $data['session'] : null;
+            $user = $data;
+
+            if (isset($data['session'])) {
                 $this->_saveSession($session);
                 $this->_notifyAllSubscribers('SIGNED_IN', $session);
             }
 
-            return ['data' => ['user' => $user, 'session' => $session], 'error' => $error];
+            return ['data' => $data, 'error' => $error];
         } catch (\Exception $e) {
-            if (isAuthError($e)) {
+            if (GoTrueError::isGoTrueError($e)) {
+                return ['data' => ['user' => null, 'session' => null], 'error' => $e];
+            }
+
+            throw $e;
+        }
+    }
+
+    public function signInWithOtp($credentials)
+    {
+        try {
+            $this->_removeSession();
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
+            $body = json_encode($credentials);
+            if (isset($credentials['email'])) {
+                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
+            } elseif (isset($credentials['phone'])) {
+                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
+            } else {
+                throw new GoTrueError('You must provide either an email or phone number and a password');
+            }
+
+            $status = $response->getStatusCode();
+            $statusText = $response->getReasonPhrase();
+            $error = null;
+           
+            if ($status != 200) {
+                return ['data' => ['user' => null, 'session' => null], 'error' => $response];
+            }
+
+            $data = json_decode($response->getBody(), true);
+
+            $session = isset($data['session']) ? $data['session'] : null;
+            $user = $data;
+
+            if (isset($data['session'])) {
+                $this->_saveSession($session);
+                $this->_notifyAllSubscribers('SIGNED_IN', $session);
+            }
+
+            return ['data' => $data, 'error' => $error];
+        } catch (\Exception $e) {
+            if (GoTrueError::isGoTrueError($e)) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $e];
             }
 
