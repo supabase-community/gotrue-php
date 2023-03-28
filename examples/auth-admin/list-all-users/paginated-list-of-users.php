@@ -14,7 +14,7 @@ $client = new GoTrueAdminApi($reference_id, $api_key, [
 ], $domain, $scheme, $path);
 
 $response = $client->listUsers([
-    'page'=> 1,
-    'perPage'=> 2
-  ]);
+    'page'   => 1,
+    'perPage'=> 2,
+]);
 print_r($response);

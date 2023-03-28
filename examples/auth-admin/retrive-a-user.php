@@ -13,5 +13,5 @@ $client = new GoTrueAdminApi($reference_id, $api_key, [
     'storageKey'         => $api_key,
 ], $domain, $scheme, $path);
 
-$response = $client->getUserById($uid='958b2bb4-20ed-4a90-a419-3b01d7e58bfd');
+$response = $client->getUserById($uid = '958b2bb4-20ed-4a90-a419-3b01d7e58bfd');
 print_r($response);

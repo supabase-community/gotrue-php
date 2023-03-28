@@ -40,7 +40,7 @@ class GoTrueClient
         }
 
         $this->headers = $headers ?? null;
-        $this->admin = new GoTrueAdminApi($reference_id, $api_key,[
+        $this->admin = new GoTrueAdminApi($reference_id, $api_key, [
             'url'     => $this->url,
             'headers' => $this->headers,
         ]);
@@ -118,7 +118,7 @@ class GoTrueClient
             $status = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
             $error = null;
-           
+
             if ($status != 200) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $response];
             }
@@ -160,7 +160,7 @@ class GoTrueClient
             $status = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
             $error = null;
-           
+
             if ($status != 200) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $response];
             }
@@ -202,7 +202,7 @@ class GoTrueClient
             $status = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
             $error = null;
-           
+
             if ($status != 200) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $response];
             }

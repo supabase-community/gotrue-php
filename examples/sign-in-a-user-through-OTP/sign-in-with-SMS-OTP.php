@@ -18,6 +18,6 @@ $response = $client->signInWithOtp([
     'gotrue_meta_security' => ['captcha_token' => $options['captchaToken'] ?? null],
     'options'              => [
         'emailRedirectTo'=> 'https://example.com/welcome',
-    ]
+    ],
 ]);
 print_r($response);
