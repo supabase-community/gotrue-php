@@ -28,7 +28,6 @@ class Request
         if (method_exists($error, 'getResponse')) {
             $response = $error->getResponse();
             $data = json_decode($response->getBody(), true);
-            print_r($data);
             $error = new GoTrueApiError($data['code'], $data['details'], $data['hint'], $data['message'], $response);
         } else {
             $error = new GoTrueUnknownError($error->getMessage(), $error->getCode());
