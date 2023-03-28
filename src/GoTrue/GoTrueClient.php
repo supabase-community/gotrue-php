@@ -27,9 +27,8 @@ class GoTrueClient
 
     public function __construct($reference_id, $api_key, $options = [], $domain = '', $scheme = '', $path = '')
     {
-
         $headers = ['Authorization' => "Bearer {$api_key}", 'apikey'=>$api_key];
-		$this->url = ! empty($reference_id) ? "{$scheme}://{$reference_id}.{$domain}{$path}" : "{$scheme}://{$domain}{$path}";
+        $this->url = !empty($reference_id) ? "{$scheme}://{$reference_id}.{$domain}{$path}" : "{$scheme}://{$domain}{$path}";
         $this->settings = array_merge(Constants::getDefaultHeaders(), $options);
 
         echo $this->settings['url'];
@@ -113,9 +112,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -128,7 +127,7 @@ class GoTrueClient
 
             //$error = $res->error;
             //$data = $res->data;
-            if($status != 200){
+            if ($status != 200) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $response];
             }
 
@@ -160,7 +159,7 @@ class GoTrueClient
             $this->_removeSession();
 
             if (isset($credentials->email)) {
-                $res = _request('POST', $this->url . '/token?grant_type=password', [
+                $res = _request('POST', $this->url.'/token?grant_type=password', [
                     'body' => [
                         'email'                => $credentials->email,
                         'password'             => $credentials->password,
@@ -173,7 +172,7 @@ class GoTrueClient
                     'xform'   => _sessionResponse,
                 ]);
             } elseif (isset($credentials->phone)) {
-                $res = _request('POST', $this->url . '/token?grant_type=password', [
+                $res = _request('POST', $this->url.'/token?grant_type=password', [
                     'body' => [
                         'phone'                => $credentials->phone,
                         'password'             => $credentials->password,
