@@ -14,13 +14,14 @@ $client = new GoTrueClient($reference_id, $api_key, [
 ], $domain, $scheme, $path);
 
 $userData = [
-    'email' => 'user@email.com',
-    'email_confirm' => true
+    'email'         => 'user@email.com',
+    'email_confirm' => true,
 ];
 
 $create_response = $client->admin->createUser($userData);
-$response = $client->admin->updateUserById($create_response['data']['id'],
-[ 'email'=>$ramdom_email ]);
+$response = $client->admin->updateUserById(
+    $create_response['data']['id'],
+    ['email'=> $ramdom_email]
+);
 print_r($response);
 $client->admin->deleteUser($create_response['data']['id']);
-

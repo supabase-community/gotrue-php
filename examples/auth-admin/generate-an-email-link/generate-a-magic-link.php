@@ -13,15 +13,15 @@ $client = new GoTrueClient($reference_id, $api_key, [
     'storageKey'         => $api_key,
 ], $domain, $scheme, $path);
 
-$params = [    
-    'type' => 'magiclink',
+$params = [
+    'type'  => 'magiclink',
     'email' => 'email@example.com',
 ];
 
 $response = $client->admin->generateLink($params);
-if($response['error'] ){
+if ($response['error']) {
     print_r($response);
-}else{
+} else {
     print_r($response['data']);
 }
 print_r($response);

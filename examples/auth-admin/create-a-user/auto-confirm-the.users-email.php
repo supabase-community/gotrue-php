@@ -14,8 +14,8 @@ $client = new GoTrueClient($reference_id, $api_key, [
 ], $domain, $scheme, $path);
 
 $userData = [
-    'email' => 'user@email.com',
-    'email_confirm' => true
+    'email'         => 'user@email.com',
+    'email_confirm' => true,
 ];
 
 $response = $client->admin->createUser($userData);

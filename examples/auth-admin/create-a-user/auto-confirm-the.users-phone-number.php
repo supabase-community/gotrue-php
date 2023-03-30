@@ -14,8 +14,8 @@ $client = new GoTrueClient($reference_id, $api_key, [
 ], $domain, $scheme, $path);
 
 $userData = [
-    'phone' => '1234567890',
-    'phone_confirm' => true
+    'phone'         => '1234567890',
+    'phone_confirm' => true,
 ];
 
 $response = $client->admin->createUser($userData);

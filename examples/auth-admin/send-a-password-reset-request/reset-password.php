@@ -13,6 +13,8 @@ $client = new GoTrueClient($reference_id, $api_key, [
     'storageKey'         => $api_key,
 ], $domain, $scheme, $path);
 
-$response = $client->admin->resetPasswordForEmail('email@example.com',
- ['redirectTo' => 'https://example.com/update-password']);
+$response = $client->admin->resetPasswordForEmail(
+    'email@example.com',
+    ['redirectTo' => 'https://example.com/update-password']
+);
 print_r($response);
