@@ -21,7 +21,7 @@ class GoTrueClient
     protected $autoRefreshToken;
     protected $persistSession;
     protected $storage;
-    protected GoTrueAdminApi $admin;
+    public GoTrueAdminApi $admin;
     protected $url;
     protected $headers;
 
@@ -43,7 +43,7 @@ class GoTrueClient
         $this->admin = new GoTrueAdminApi($reference_id, $api_key, [
             'url'     => $this->url,
             'headers' => $this->headers,
-        ]);
+        ], $domain, $scheme, $path);
         $this->storage = new Storage();
         $this->stateChangeEmitters = [];
         $this->initializePromise = $this->initialize();
