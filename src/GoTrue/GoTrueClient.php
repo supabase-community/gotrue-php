@@ -7,6 +7,8 @@ use Supabase\Util\Constants;
 use Supabase\Util\GoTrueError;
 use Supabase\Util\Request;
 use Supabase\Util\Storage;
+use Supabase\Util\Helpers;
+
 
 class GoTrueClient
 {
@@ -226,4 +228,127 @@ class GoTrueClient
             throw $e;
         }
     }
+
+    public function getUser($jwt = null){
+        try {
+            if (!$jwt) {
+                $sessionResult = $this->getSession();
+                $sessionData = $sessionResult['data'];
+                $sessionError = $sessionResult['error'];
+    
+                if ($sessionError) {
+                    throw $sessionError;
+                }
+    
+                // Default to Authorization header if there is no existing session
+                $jwt = $sessionData['session']['access_token'] ?? null;
+            }
+            $this->headers['Authorization'] = "Bearer {$jwt}";
+            $url = $this->url.'/user';
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+            $response = $this->__request('GET', $url, $headers);
+            $user = json_decode($response->getBody(), true);
+
+            return $user;
+    
+            /*return await _request($this->fetch, 'GET', $this->url.'/user', [
+                'headers' => $this->headers,
+                'jwt' => $jwt,
+                'xform' => '_userResponse'
+            ]);*/
+        } catch (\Exception $e) {
+            if (GoTrueError::isGoTrueError($e)) {
+                return ['data' => ['user' => null], 'error' => $e];
+            }
+    
+            throw $e;
+        }
+    }
+
+    public function updateUser($attrs, $jwt = null, $options = []){
+        try {
+            if (!$jwt) {
+                $sessionResult = $this->getSession();
+                $sessionData = $sessionResult['data'];
+                $sessionError = $sessionResult['error'];
+    
+                if ($sessionError) {
+                    throw $sessionError;
+                }
+    
+                // Default to Authorization header if there is no existing session
+                $jwt = $sessionData['session']['access_token'] ?? null;
+            }
+            $this->headers['Authorization'] = "Bearer {$jwt}";
+            $redirectTo = isset($options['redirectTo']) ? "?redirect_to={$options['redirectTo']}" : null;
+            $url = $this->url.'/user'.$redirectTo;
+            $body = json_encode($attrs);
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+            $response = $this->__request('PUT', $url, $headers, $body);
+            $data = json_decode($response->getBody(), true);
+
+            return ['data' => $data, 'error' => null];
+        } catch (\Exception $e) {
+            if (GoTrueError::isGoTrueError($e)) {
+                return ['data' => ['user' => null], 'error' => $e];
+            }    
+            throw $e;
+        }
+    }
+
+    public function setSession($currentSession = []) {
+        try {
+            if (empty($currentSession['access_token']) || empty($currentSession['refresh_token'])) {
+                throw new AuthSessionMissingError();
+            }
+    
+            $timeNow = time();
+            $expiresAt = $timeNow;
+            $hasExpired = true;
+            $session = null;
+            $payload = Helpers::decodeJWTPayload($currentSession['access_token']);
+            if (!empty($payload['exp'])) {
+                $expiresAt = $payload['exp'];
+                $hasExpired = $expiresAt <= $timeNow ? true : false;
+            }
+
+            return $hasExpired;
+    
+            if ($hasExpired) {
+                $result = $this->_callRefreshToken($currentSession['refresh_token']);
+                if (!empty($result['error'])) {
+                    return ['data' => ['user' => null, 'session' => null], 'error' => $result['error']];
+                }
+    
+                if (empty($result['session'])) {
+                    return ['data' => ['user' => null, 'session' => null], 'error' => null];
+                }
+                $session = $result['session'];
+            } else {
+                $result = $this->getUser($currentSession['access_token']);
+                if (!empty($result['error'])) {
+                    throw $result['error'];
+                }
+                $session = [
+                    'access_token' => $currentSession['access_token'],
+                    'refresh_token' => $currentSession['refresh_token'],
+                    'user' => $result['data']['user'],
+                    'token_type' => 'bearer',
+                    'expires_in' => $expiresAt - $timeNow,
+                    'expires_at' => $expiresAt,
+                ];
+                $this->_saveSession($session);
+                $this->_notifyAllSubscribers('SIGNED_IN', $session);
+            }
+    
+            return ['data' => ['user' => $session['user'], 'session' => $session], 'error' => null];
+        } catch (Throwable $error) {
+            if (isAuthError($error)) {
+                return ['data' => ['session' => null, 'user' => null], 'error' => $error];
+            }
+    
+            throw $error;
+        }
+    }
+    
 }
