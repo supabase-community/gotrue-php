@@ -14,21 +14,21 @@ $client = new GoTrueClient($reference_id, $api_key, [
 ], $domain, $scheme, $path);
 
 $userData = [
-    'email'         => $ramdom_email,
+    'email'                => $ramdom_email,
     'password'             => '12345678',
-    'email_confirm' => true,
+    'email_confirm'        => true,
 ];
 
 $new_user = $client->admin->createUser($userData);
 
 $response = $client->signInWithPassword([
     'email'                => $ramdom_email,
-    'password'             => '12345678'
+    'password'             => '12345678',
 ]);
 $access_token = $response['data']['access_token'];
 $token_type = $response['data']['token_type'];
 $expires_in = $response['data']['expires_in'];
 $refresh_token = $response['data']['refresh_token'];
-$user = $client->updateUser(['password'=>"new password"], $access_token);
+$user = $client->updateUser(['password'=>'new password'], $access_token);
 print_r($user);
 $client->admin->deleteUser($new_user['data']['id']);
