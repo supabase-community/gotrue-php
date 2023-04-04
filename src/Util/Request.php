@@ -29,7 +29,9 @@ class Request
             $response = $error->getResponse();
             $data = json_decode($response->getBody(), true);
             print_r($data);
-            $error = new GoTrueApiError($data['error'], $data['error_description'], $data['error'], $data['error_description'], $response);
+            //$error = new GoTrueApiError($data['error'], $data['error_description'], $data['error'], $data['error_description'], $response);
+            $error = new GoTrueApiError($data['code'], $data['msg'], $data['code'], $data['msg'], $response);
+
         } else {
             $error = new GoTrueUnknownError($error->getMessage(), $error->getCode());
         }

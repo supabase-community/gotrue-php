@@ -27,13 +27,16 @@ class GoTrueAdminApi
 
     public function signOut($jwt)
     {
-        $response = _request('POST', $this->url.'/admin/users/logout', [
-            'headers'       => $this->headers,
-            'jwt'           => $jwt,
-            'noResolveJson' => true,
-        ]);
 
-        return ['data' => null, 'error' => null];
+        try {
+            $url = $this->url.'/logout';
+            $this->headers['Authorization'] = "Bearer {$jwt}";
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+            $this->__request('POST', $url, $headers);
+            return ['data' => null, 'error' => null];
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function inviteUserByEmail($email, $options = [])
@@ -53,13 +56,6 @@ class GoTrueAdminApi
         } catch (\Exception $e) {
             throw $e;
         }
-
-        return _request('POST', $this->url.'/invite', [
-            'body'       => ['email' => $email, 'data' => $opts['data']],
-            'headers'    => $this->headers,
-            'redirectTo' => $opts['redirectTo'],
-            'xform'      => _userResponse,
-        ]);
     }
 
     public function generateLink($params, $options = [])

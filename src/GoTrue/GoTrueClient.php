@@ -8,6 +8,7 @@ use Supabase\Util\GoTrueError;
 use Supabase\Util\Helpers;
 use Supabase\Util\Request;
 use Supabase\Util\Storage;
+use Supabase\Util\AuthSessionMissingError;
 
 class GoTrueClient
 {
@@ -23,12 +24,13 @@ class GoTrueClient
     protected $persistSession;
     protected $storage;
     public GoTrueAdminApi $admin;
+    public GoTrueMFAApi $mfa;
     protected $url;
     protected $headers;
 
     public function __construct($reference_id, $api_key, $options = [], $domain = 'supabase.co', $scheme = 'https', $path = '/auth/v1')
     {
-        $headers = ['Authorization' => "Bearer {$api_key}", 'apikey'=>$api_key];
+        $headers = ['Authorization' => "Bearer {$api_key}", 'apikey' => $api_key];
         $this->url = !empty($reference_id) ? "{$scheme}://{$reference_id}.{$domain}{$path}" : "{$scheme}://{$domain}{$path}";
         $this->settings = array_merge(Constants::getDefaultHeaders(), $options);
         $this->storageKey = $this->settings['storageKey'] ?? null;
@@ -42,6 +44,11 @@ class GoTrueClient
 
         $this->headers = $headers ?? null;
         $this->admin = new GoTrueAdminApi($reference_id, $api_key, [
+            'url'     => $this->url,
+            'headers' => $this->headers,
+        ], $domain, $scheme, $path);
+        
+        $this->mfa = new GoTrueMFAApi($reference_id, $api_key, [
             'url'     => $this->url,
             'headers' => $this->headers,
         ], $domain, $scheme, $path);
@@ -109,9 +116,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -151,9 +158,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/token?grant_type=password', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/token?grant_type=password', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -193,9 +200,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/otp', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/otp', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -244,7 +251,7 @@ class GoTrueClient
                 $jwt = $sessionData['session']['access_token'] ?? null;
             }
             $this->headers['Authorization'] = "Bearer {$jwt}";
-            $url = $this->url.'/user';
+            $url = $this->url . '/user';
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('GET', $url, $headers);
             $user = json_decode($response->getBody(), true);
@@ -282,7 +289,7 @@ class GoTrueClient
             }
             $this->headers['Authorization'] = "Bearer {$jwt}";
             $redirectTo = isset($options['redirectTo']) ? "?redirect_to={$options['redirectTo']}" : null;
-            $url = $this->url.'/user'.$redirectTo;
+            $url = $this->url . '/user' . $redirectTo;
             $body = json_encode($attrs);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('PUT', $url, $headers, $body);
@@ -315,7 +322,7 @@ class GoTrueClient
                 $hasExpired = $expiresAt <= $timeNow ? true : false;
             }
 
-            return $hasExpired;
+            //return $hasExpired;
 
             if ($hasExpired) {
                 $result = $this->_callRefreshToken($currentSession['refresh_token']);
@@ -332,25 +339,106 @@ class GoTrueClient
                 if (!empty($result['error'])) {
                     throw $result['error'];
                 }
+
                 $session = [
                     'access_token'  => $currentSession['access_token'],
                     'refresh_token' => $currentSession['refresh_token'],
-                    'user'          => $result['data']['user'],
+                    'user'          => $result['identities'],
                     'token_type'    => 'bearer',
                     'expires_in'    => $expiresAt - $timeNow,
                     'expires_at'    => $expiresAt,
                 ];
-                $this->_saveSession($session);
-                $this->_notifyAllSubscribers('SIGNED_IN', $session);
+
+                //$this->_saveSession($session);
+                //$this->_notifyAllSubscribers('SIGNED_IN', $session);
             }
 
             return ['data' => ['user' => $session['user'], 'session' => $session], 'error' => null];
-        } catch (Throwable $error) {
-            if (isAuthError($error)) {
-                return ['data' => ['session' => null, 'user' => null], 'error' => $error];
+        } catch (\Exception $e) {
+            if (isAuthError($e)) {
+                return ['data' => ['session' => null, 'user' => null], 'error' => $e];
             }
 
-            throw $error;
+            throw $e;
+        }
+    }
+
+    public function signOut($access_token = null)
+    {
+        /**
+         * Inside a browser context, `sign_out` will remove the logged in user from the
+         * browser session and log them out - removing all items from localstorage and
+         * then trigger a `"SIGNED_OUT"` event.
+         * For server-side management, you can revoke all refresh tokens for a user by
+         * passing a user's JWT through to `api.sign_out`.
+         * There is no way to revoke a user's access token jwt until it expires.
+         * It is recommended to set a shorter expiry on the jwt for this reason.
+         */
+
+        $session = $this->getSession($access_token);
+        $access_token = $session ? $session['access_token'] : null;
+
+        if ($access_token) {
+            $this->admin->signOut($access_token);
+        }
+
+        //$this->_remove_session();
+        //$this->_notify_all_subscribers("SIGNED_OUT", null);
+    }
+
+    private function getSession($access_token){
+        
+        return ['access_token'=>$access_token];
+    }
+
+
+    private function _callRefreshToken(string $refreshToken)
+    {
+
+        try {
+
+            if (!$refreshToken) {
+                throw new AuthSessionMissingError();
+            }
+            $data = $this->_refreshAccessToken($refreshToken);
+            $error = $data['error'];
+
+            if ($error) {
+                throw $error;
+            }
+
+            if (!$data['session']) {
+                throw new AuthSessionMissingError();
+            }
+
+            //await $this->_saveSession($data['session']);
+            //$this->_notifyAllSubscribers('TOKEN_REFRESHED', $data['session']);
+
+            $result = array('session' => $data['session'], 'error' => null);
+
+            return $result;
+        } catch (\Exception $e) {
+            if (isAuthError($e)) {
+                $result = array('session' => null, 'error' => $e);
+                return $result;
+            }
+            throw $e;
+        }
+    }
+
+    public function _refreshAccessToken($refreshToken)
+    {
+        try {
+            $url = $this->url . '/token?grant_type=refresh_token';
+            print_r($url);
+            $body = json_encode(['refresh_token' => $refreshToken]);
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+            $response = $this->__request('POST', $url, $headers, $body);
+            $data = json_decode($response->getBody(), true);
+
+            return ['session' => $data, 'error' => null];
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 }
