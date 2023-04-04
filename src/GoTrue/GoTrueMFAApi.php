@@ -2,7 +2,6 @@
 
 namespace Supabase\GoTrue;
 
-use GuzzleHttp\Psr7;
 use Psr\Http\Message\ResponseInterface;
 use Supabase\Util\Request;
 
@@ -34,6 +33,7 @@ class GoTrueMFAApi
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('POST', $url, $headers, $body);
             $data = json_decode($response->getBody(), true);
+
             return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             throw $e;
@@ -48,6 +48,7 @@ class GoTrueMFAApi
             $body = json_encode($params);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $this->__request('DELETE', $url, $headers, $body);
+
             return ['data' => null, 'error' => null];
         } catch (\Exception $e) {
             throw $e;

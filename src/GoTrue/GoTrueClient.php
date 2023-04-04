@@ -3,12 +3,12 @@
 namespace Supabase\GoTrue;
 
 use Psr\Http\Message\ResponseInterface;
+use Supabase\Util\AuthSessionMissingError;
 use Supabase\Util\Constants;
 use Supabase\Util\GoTrueError;
 use Supabase\Util\Helpers;
 use Supabase\Util\Request;
 use Supabase\Util\Storage;
-use Supabase\Util\AuthSessionMissingError;
 
 class GoTrueClient
 {
@@ -47,7 +47,7 @@ class GoTrueClient
             'url'     => $this->url,
             'headers' => $this->headers,
         ], $domain, $scheme, $path);
-        
+
         $this->mfa = new GoTrueMFAApi($reference_id, $api_key, [
             'url'     => $this->url,
             'headers' => $this->headers,
@@ -116,9 +116,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -158,9 +158,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url . '/token?grant_type=password', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url . '/token?grant_type=password', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -200,9 +200,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url . '/otp', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url . '/otp', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -251,7 +251,7 @@ class GoTrueClient
                 $jwt = $sessionData['session']['access_token'] ?? null;
             }
             $this->headers['Authorization'] = "Bearer {$jwt}";
-            $url = $this->url . '/user';
+            $url = $this->url.'/user';
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('GET', $url, $headers);
             $user = json_decode($response->getBody(), true);
@@ -289,7 +289,7 @@ class GoTrueClient
             }
             $this->headers['Authorization'] = "Bearer {$jwt}";
             $redirectTo = isset($options['redirectTo']) ? "?redirect_to={$options['redirectTo']}" : null;
-            $url = $this->url . '/user' . $redirectTo;
+            $url = $this->url.'/user'.$redirectTo;
             $body = json_encode($attrs);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('PUT', $url, $headers, $body);
@@ -374,7 +374,6 @@ class GoTrueClient
          * There is no way to revoke a user's access token jwt until it expires.
          * It is recommended to set a shorter expiry on the jwt for this reason.
          */
-
         $session = $this->getSession($access_token);
         $access_token = $session ? $session['access_token'] : null;
 
@@ -386,17 +385,14 @@ class GoTrueClient
         //$this->_notify_all_subscribers("SIGNED_OUT", null);
     }
 
-    private function getSession($access_token){
-        
+    private function getSession($access_token)
+    {
         return ['access_token'=>$access_token];
     }
 
-
     private function _callRefreshToken(string $refreshToken)
     {
-
         try {
-
             if (!$refreshToken) {
                 throw new AuthSessionMissingError();
             }
@@ -414,14 +410,16 @@ class GoTrueClient
             //await $this->_saveSession($data['session']);
             //$this->_notifyAllSubscribers('TOKEN_REFRESHED', $data['session']);
 
-            $result = array('session' => $data['session'], 'error' => null);
+            $result = ['session' => $data['session'], 'error' => null];
 
             return $result;
         } catch (\Exception $e) {
             if (isAuthError($e)) {
-                $result = array('session' => null, 'error' => $e);
+                $result = ['session' => null, 'error' => $e];
+
                 return $result;
             }
+
             throw $e;
         }
     }
@@ -429,7 +427,7 @@ class GoTrueClient
     public function _refreshAccessToken($refreshToken)
     {
         try {
-            $url = $this->url . '/token?grant_type=refresh_token';
+            $url = $this->url.'/token?grant_type=refresh_token';
             print_r($url);
             $body = json_encode(['refresh_token' => $refreshToken]);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);

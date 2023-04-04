@@ -27,12 +27,12 @@ class GoTrueAdminApi
 
     public function signOut($jwt)
     {
-
         try {
             $url = $this->url.'/logout';
             $this->headers['Authorization'] = "Bearer {$jwt}";
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $this->__request('POST', $url, $headers);
+
             return ['data' => null, 'error' => null];
         } catch (\Exception $e) {
             throw $e;
