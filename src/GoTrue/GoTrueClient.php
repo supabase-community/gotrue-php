@@ -388,14 +388,13 @@ class GoTrueClient
     public function listFactors($jwt)
     {
         try {
-
             $user = $this->getUser($jwt);
 
             $factors = isset($user['factors']) ? $user['factors'] : [];
-            $totp = array_filter($factors, function($factor) {
+            $totp = array_filter($factors, function ($factor) {
                 return $factor['factor_type'] === 'totp' && $factor['status'] === 'verified';
             });
-           
+
             return ['data' => ['all'=> $factors, 'totp' =>$totp], 'error' => null];
         } catch (\Exception $e) {
             throw $e;
@@ -415,41 +414,43 @@ class GoTrueClient
             $sessionResponse = $this->getUser($access_token);
             $session = $sessionResponse;
             $sessionError = isset($sessionResponse['error']) ? $sessionResponse['error'] : false;
-    
+
             if ($sessionError) {
                 $response['data'] = null;
                 $response['error'] = $sessionError;
+
                 return $response;
             }
-    
+
             if (!$session) {
                 $response['data']['currentLevel'] = null;
                 $response['data']['nextLevel'] = null;
-                $response['data']['currentAuthenticationMethods'] = array();
+                $response['data']['currentAuthenticationMethods'] = [];
                 $response['error'] = null;
+
                 return $response;
             }
-    
+
             $payload = Helpers::decodeJWTPayload($access_token);
-    
+
             $currentLevel = null;
-    
+
             if (isset($payload['aal'])) {
                 $currentLevel = $payload['aal'];
             }
-    
+
             $nextLevel = $currentLevel;
-    
-            $verifiedFactors = array_filter($session['user']['factors'], function($factor) {
+
+            $verifiedFactors = array_filter($session['user']['factors'], function ($factor) {
                 return $factor['status'] === 'verified';
             });
-    
+
             if (count($verifiedFactors) > 0) {
                 $nextLevel = 'aal2';
             }
-    
-            $currentAuthenticationMethods = $payload['amr'] ?? array();
-    
+
+            $currentAuthenticationMethods = $payload['amr'] ?? [];
+
             $response['data']['currentLevel'] = $currentLevel;
             $response['data']['nextLevel'] = $nextLevel;
             $response['data']['currentAuthenticationMethods'] = $currentAuthenticationMethods;
@@ -458,7 +459,7 @@ class GoTrueClient
             $response['data'] = null;
             $response['error'] = $e->getMessage();
         }
-    
+
         return $response;
     }
 

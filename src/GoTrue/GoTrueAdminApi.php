@@ -201,6 +201,7 @@ class GoTrueAdminApi
         $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
         $response = $this->__request('GET', $this->url.'/admin/users/'.$uid.'/factors', $headers);
         $data = json_decode($response->getBody(), true);
+
         return ['data' => $data, 'error' => null];
     }
 
@@ -209,6 +210,7 @@ class GoTrueAdminApi
         $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
         $response = $this->__request('DELETE', $this->url.'/admin/users/'.$uid.'/factors/'.$factorId, $headers);
         $data = json_decode($response->getBody(), true);
+
         return ['data' => $data, 'error' => null];
     }
 }

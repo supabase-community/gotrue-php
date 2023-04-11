@@ -48,13 +48,14 @@ class GoTrueMFAApi
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('POST', $url, $headers);
             $data = json_decode($response->getBody(), true);
+
             return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
-    public function verify($factor_id, $jwt, $params=[])
+    public function verify($factor_id, $jwt, $params = [])
     {
         try {
             $url = $this->url.'/factors/'.$factor_id.'/verify';
@@ -63,31 +64,31 @@ class GoTrueMFAApi
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('POST', $url, $headers, $body);
             $data = json_decode($response->getBody(), true);
+
             return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
-    public function challengeAndVerify($factor_id,$code, $jwt, $params=[])
+    public function challengeAndVerify($factor_id, $code, $jwt, $params = [])
     {
         try {
-
             $dataChallange = $this->challenge($factor_id, $jwt);
 
             if ($dataChallange['error']) {
-                return ['data'=> null, 'error'=> $dataChallange['error'] ];
+                return ['data'=> null, 'error'=> $dataChallange['error']];
             }
 
-            return $this->verify($factor_id, $jwt,
-            ['challenge_id'=>$dataChallange['data']['id'], 'code'=>$code]);
-
+            return $this->verify(
+                $factor_id,
+                $jwt,
+                ['challenge_id'=> $dataChallange['data']['id'], 'code'=>$code]
+            );
         } catch (\Exception $e) {
             throw $e;
         }
     }
-
-    
 
     public function unenroll($factor_id, $jwt)
     {
@@ -97,10 +98,10 @@ class GoTrueMFAApi
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('DELETE', $url, $headers);
             $data = json_decode($response->getBody(), true);
+
             return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             throw $e;
         }
     }
-   
 }

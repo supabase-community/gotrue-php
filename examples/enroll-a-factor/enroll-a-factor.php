@@ -39,9 +39,12 @@ $challenge_id = $data_challenge['data']['id'];
 $expires_at = $data_challenge['data']['expires_at'];
 
 //Verify
-$data_verify = $client->mfa->verify($factor_id, $access_token,
- ['challenge_id'=>$challenge_id, 'code'=>$secret]);
- 
- //Challange and Verify
+$data_verify = $client->mfa->verify(
+    $factor_id,
+    $access_token,
+    ['challenge_id'=> $challenge_id, 'code'=>$secret]
+);
+
+//Challange and Verify
 $data_challenge_verify = $client->mfa->challengeAndVerify($factor_id, '123456', $access_token);
 $data_unenroll = $client->mfa->unenroll($factor_id, $access_token);
