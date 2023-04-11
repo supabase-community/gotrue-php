@@ -27,21 +27,5 @@ $response = $client->signInWithPassword([
 ]);
 $access_token = $response['data']['access_token'];
 
-//Enroll
-$data = $client->mfa->enroll(['factor_type'=> 'totp'], $access_token);
-$factor_id = $data['data']['id'];
-$secret = $data['data']['totp']['secret'];
-unset($data['data']['totp']['qr_code']);
-
-//Challange
-$data_challenge = $client->mfa->challenge($factor_id, $access_token);
-$challenge_id = $data_challenge['data']['id'];
-$expires_at = $data_challenge['data']['expires_at'];
-
-//Verify
-$data_verify = $client->mfa->verify($factor_id, $access_token,
- ['challenge_id'=>$challenge_id, 'code'=>$secret]);
- 
- //Challange and Verify
-$data_challenge_verify = $client->mfa->challengeAndVerify($factor_id, '123456', $access_token);
-$data_unenroll = $client->mfa->unenroll($factor_id, $access_token);
+$user = $client->_getAuthenticatorAssuranceLevel($access_token);
+print_r($user);

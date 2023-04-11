@@ -46,7 +46,6 @@ class GoTrueAdminApi
 
         try {
             $url = $this->url.'/invite'.$redirectTo;
-            print_r($url);
             $body = json_encode($data);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('POST', $url, $headers, $body);
@@ -197,17 +196,19 @@ class GoTrueAdminApi
         }
     }
 
-    private function _listFactors($params)
+    public function _listFactors($uid)
     {
-        return _request('GET', $this->url.'/admin/users/'.$uid.'/factors', [
-            'headers' => $this->headers,
-        ]);
+        $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+        $response = $this->__request('GET', $this->url.'/admin/users/'.$uid.'/factors', $headers);
+        $data = json_decode($response->getBody(), true);
+        return ['data' => $data, 'error' => null];
     }
 
-    private function _deleteFactor($params)
+    public function _deleteFactor($uid, $factorId)
     {
-        return _request('DELETE', $this->url.'/admin/users/'.$userId.'/factors / $params->id', [
-            'headers' => $this->headers,
-        ]);
+        $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+        $response = $this->__request('DELETE', $this->url.'/admin/users/'.$uid.'/factors/'.$factorId, $headers);
+        $data = json_decode($response->getBody(), true);
+        return ['data' => $data, 'error' => null];
     }
 }

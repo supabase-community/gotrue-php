@@ -385,9 +385,81 @@ class GoTrueClient
         //$this->_notify_all_subscribers("SIGNED_OUT", null);
     }
 
+    public function listFactors($jwt)
+    {
+        try {
+
+            $user = $this->getUser($jwt);
+
+            $factors = isset($user['factors']) ? $user['factors'] : [];
+            $totp = array_filter($factors, function($factor) {
+                return $factor['factor_type'] === 'totp' && $factor['status'] === 'verified';
+            });
+           
+            return ['data' => ['all'=> $factors, 'totp' =>$totp], 'error' => null];
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
     private function getSession($access_token)
     {
         return ['access_token'=>$access_token];
+    }
+
+    public function _getAuthenticatorAssuranceLevel($access_token)
+    {
+        $user = $this->getUser($access_token);
+
+        try {
+            $sessionResponse = $this->getUser($access_token);
+            $session = $sessionResponse;
+            $sessionError = isset($sessionResponse['error']) ? $sessionResponse['error'] : false;
+    
+            if ($sessionError) {
+                $response['data'] = null;
+                $response['error'] = $sessionError;
+                return $response;
+            }
+    
+            if (!$session) {
+                $response['data']['currentLevel'] = null;
+                $response['data']['nextLevel'] = null;
+                $response['data']['currentAuthenticationMethods'] = array();
+                $response['error'] = null;
+                return $response;
+            }
+    
+            $payload = Helpers::decodeJWTPayload($access_token);
+    
+            $currentLevel = null;
+    
+            if (isset($payload['aal'])) {
+                $currentLevel = $payload['aal'];
+            }
+    
+            $nextLevel = $currentLevel;
+    
+            $verifiedFactors = array_filter($session['user']['factors'], function($factor) {
+                return $factor['status'] === 'verified';
+            });
+    
+            if (count($verifiedFactors) > 0) {
+                $nextLevel = 'aal2';
+            }
+    
+            $currentAuthenticationMethods = $payload['amr'] ?? array();
+    
+            $response['data']['currentLevel'] = $currentLevel;
+            $response['data']['nextLevel'] = $nextLevel;
+            $response['data']['currentAuthenticationMethods'] = $currentAuthenticationMethods;
+            $response['error'] = null;
+        } catch (\Exception $e) {
+            $response['data'] = null;
+            $response['error'] = $e->getMessage();
+        }
+    
+        return $response;
     }
 
     private function _callRefreshToken(string $refreshToken)
@@ -428,7 +500,6 @@ class GoTrueClient
     {
         try {
             $url = $this->url.'/token?grant_type=refresh_token';
-            print_r($url);
             $body = json_encode(['refresh_token' => $refreshToken]);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('POST', $url, $headers, $body);

@@ -40,18 +40,67 @@ class GoTrueMFAApi
         }
     }
 
-    public function unenroll($params = [], $jwt)
+    public function challenge($factor_id, $jwt)
     {
         try {
-            $url = $this->url.'/factors';
+            $url = $this->url.'/factors/'.$factor_id.'/challenge';
             $this->headers['Authorization'] = "Bearer {$jwt}";
-            $body = json_encode($params);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
-            $this->__request('DELETE', $url, $headers, $body);
-
-            return ['data' => null, 'error' => null];
+            $response = $this->__request('POST', $url, $headers);
+            $data = json_decode($response->getBody(), true);
+            return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             throw $e;
         }
     }
+
+    public function verify($factor_id, $jwt, $params=[])
+    {
+        try {
+            $url = $this->url.'/factors/'.$factor_id.'/verify';
+            $this->headers['Authorization'] = "Bearer {$jwt}";
+            $body = json_encode($params);
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+            $response = $this->__request('POST', $url, $headers, $body);
+            $data = json_decode($response->getBody(), true);
+            return ['data' => $data, 'error' => null];
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function challengeAndVerify($factor_id,$code, $jwt, $params=[])
+    {
+        try {
+
+            $dataChallange = $this->challenge($factor_id, $jwt);
+
+            if ($dataChallange['error']) {
+                return ['data'=> null, 'error'=> $dataChallange['error'] ];
+            }
+
+            return $this->verify($factor_id, $jwt,
+            ['challenge_id'=>$dataChallange['data']['id'], 'code'=>$code]);
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    
+
+    public function unenroll($factor_id, $jwt)
+    {
+        try {
+            $url = $this->url.'/factors/'.$factor_id;
+            $this->headers['Authorization'] = "Bearer {$jwt}";
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+            $response = $this->__request('DELETE', $url, $headers);
+            $data = json_decode($response->getBody(), true);
+            return ['data' => $data, 'error' => null];
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+   
 }
