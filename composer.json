@@ -38,6 +38,8 @@
         "lcobucci/jwt": "^4.2",
         "guzzlehttp/guzzle": "^7.5",
         "fzaninotto/faker": "^1.5",
-        "vlucas/phpdotenv": "5.5"
+        "vlucas/phpdotenv": "5.5",
+        "ratchet/pawl": "^0.4.1",
+        "cboden/ratchet": "^0.4.4"
     }
 }

@@ -408,8 +408,6 @@ class GoTrueClient
 
     public function _getAuthenticatorAssuranceLevel($access_token)
     {
-        $user = $this->getUser($access_token);
-
         try {
             $sessionResponse = $this->getUser($access_token);
             $session = $sessionResponse;
@@ -441,7 +439,9 @@ class GoTrueClient
 
             $nextLevel = $currentLevel;
 
-            $verifiedFactors = array_filter($session['user']['factors'], function ($factor) {
+            $session['factors'] = $session['factors'] ?? [];
+
+            $verifiedFactors = array_filter($session['factors'], function ($factor) {
                 return $factor['status'] === 'verified';
             });
 

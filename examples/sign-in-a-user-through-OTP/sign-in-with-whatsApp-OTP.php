@@ -14,10 +14,10 @@ $client = new GoTrueClient($reference_id, $api_key, [
 ], $domain, $scheme, $path);
 
 $response = $client->signInWithOtp([
-    'email'                => 'adolfo@zerocopylabs.com',
+    'phone'                => '+5213221924866',
     'gotrue_meta_security' => ['captcha_token' => $options['captchaToken'] ?? null],
     'options'              => [
-        'emailRedirectTo'=> 'https://example.com/welcome',
+        'channel'=> 'whaapp',
     ],
 ]);
 print_r($response);
