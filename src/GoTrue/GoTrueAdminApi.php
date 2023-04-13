@@ -31,9 +31,9 @@ class GoTrueAdminApi
             $url = $this->url.'/logout';
             $this->headers['Authorization'] = "Bearer {$jwt}";
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
-            $this->__request('POST', $url, $headers);
-
-            return ['data' => null, 'error' => null];
+            $response = $this->__request('POST', $url, $headers);
+            $data = json_decode($response->getBody(), true);
+            return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             throw $e;
         }
