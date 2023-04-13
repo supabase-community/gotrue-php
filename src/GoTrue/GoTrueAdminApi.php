@@ -33,6 +33,7 @@ class GoTrueAdminApi
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('POST', $url, $headers);
             $data = json_decode($response->getBody(), true);
+
             return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             throw $e;
