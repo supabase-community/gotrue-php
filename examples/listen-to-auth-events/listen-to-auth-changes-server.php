@@ -14,6 +14,5 @@ $client = new GoTrueClient($reference_id, $api_key, [
 ], $domain, $scheme, $path);
 
 $app = new Ratchet\App('127.0.0.1', 9000);
-$app->route('/echo', new Ratchet\Server\EchoServer, ['*']);
+$app->route('/echo', new Ratchet\Server\EchoServer(), ['*']);
 $app->run();
-
