@@ -51,7 +51,7 @@ final class GoTrueAdminApiTest extends TestCase
         $result = $this->client->admin->listUsers([
             'page'   => 1,
             'perPage'=> 2,
-        ]);   
+        ]);
         fwrite(STDERR, print_r($result, true));
         $this->assertNull($result['error']);
         $this->assertIsArray($result['data']);
@@ -80,7 +80,7 @@ final class GoTrueAdminApiTest extends TestCase
             'password'             => 'example-password',
             'email_confirm'        => true,
         ]);
-        $uid = $result['data']['id'];        
+        $uid = $result['data']['id'];
         $result = $this->client->admin->deleteUser($uid);
         fwrite(STDERR, print_r($result, true));
         $this->assertNull($result['error']);
@@ -89,7 +89,7 @@ final class GoTrueAdminApiTest extends TestCase
 
     public function testInviteUserByEmail(): void
     {
-        $email = $this->createRandomEmail();        
+        $email = $this->createRandomEmail();
         $result = $this->client->admin->inviteUserByEmail($email);
         fwrite(STDERR, print_r($result, true));
         $this->assertNull($result['error']);
@@ -105,11 +105,13 @@ final class GoTrueAdminApiTest extends TestCase
             'email_confirm'        => true,
         ]);
         $uid = $result['data']['user']['id'];
-        $result = $this->client->admin->resetPasswordForEmail($email,
-        ['redirectTo' => 'https://example.com/update-password']);
+        $result = $this->client->admin->resetPasswordForEmail(
+            $email,
+            ['redirectTo' => 'https://example.com/update-password']
+        );
         fwrite(STDERR, print_r($result, true));
         $this->assertIsArray($result['data']);
-        $this->assertNull($result['error']);   
+        $this->assertNull($result['error']);
         $result = $this->client->admin->deleteUser($uid);
     }
 
@@ -122,11 +124,13 @@ final class GoTrueAdminApiTest extends TestCase
             'email_confirm'        => true,
         ]);
         $uid = $result['data']['user']['id'];
-        $result = $this->client->admin->resetPasswordForEmail($email,
-        ['redirectTo' => 'https://example.com/update-password']);
+        $result = $this->client->admin->resetPasswordForEmail(
+            $email,
+            ['redirectTo' => 'https://example.com/update-password']
+        );
         fwrite(STDERR, print_r($result, true));
         $this->assertIsArray($result['data']);
-        $this->assertNull($result['error']);   
+        $this->assertNull($result['error']);
         $result = $this->client->admin->deleteUser($uid);
     }
 
@@ -142,5 +146,4 @@ final class GoTrueAdminApiTest extends TestCase
 
         return $random_string.'@'.$domain;
     }
-
 }
