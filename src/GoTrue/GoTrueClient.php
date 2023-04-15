@@ -401,7 +401,7 @@ class GoTrueClient
         }
     }
 
-    private function getSession($access_token)
+    public function getSession($access_token)
     {
         return ['access_token'=>$access_token];
     }

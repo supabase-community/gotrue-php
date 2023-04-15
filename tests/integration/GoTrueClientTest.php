@@ -40,8 +40,6 @@ final class GoTrueClientTest extends TestCase
         ]);
         $this->assertNull($result['error']);
         $this->assertArrayHasKey('data', $result);
-        //$getValue = json_decode((string) $result->getBody());
-        //fwrite(STDERR, print_r($result['data'], TRUE));
         $email = $result['data']['user']['email'];
         $uid = $result['data']['user']['id'];
         $this->assertEquals($email, $email);
@@ -65,8 +63,8 @@ final class GoTrueClientTest extends TestCase
         $this->assertNull($result['error']);
         $this->assertArrayHasKey('data', $result);
         $uid = $result['data']['user']['id'];
-        $acces_token = $result['data']['access_token'];
-        $this->assertIsString($acces_token);
+        $access_token = $result['data']['access_token'];
+        $this->assertIsString($access_token);
         $result = $this->client->admin->deleteUser($uid);
     }
 
@@ -106,17 +104,150 @@ final class GoTrueClientTest extends TestCase
             'email'                => $email,
             'password'             => 'example-password',
         ]);
-        fwrite(STDERR, print_r($result, true));
-        $acces_token = $result['data']['access_token'];
-        $result = $this->client->signOut($acces_token);
-
-        fwrite(STDERR, print_r($result, true));
-
+        $access_token = $result['data']['access_token'];
+        $result = $this->client->signOut($access_token);
         $this->assertNull($result['error']);
-        //$this->assertArrayHasKey('data', $result);
         $uid = $result['data']['user']['id'];
-        $this->assertIsString($acces_token);
+        $this->assertIsString($access_token);
 
+        $result = $this->client->admin->deleteUser($uid);
+    }
+
+    public function testGetSession(): void
+    {
+        $email = $this->createRandomEmail();
+        $result = $this->client->admin->createUser([
+            'email'                => $email,
+            'password'             => 'example-password',
+            'email_confirm'        => true,
+        ]);
+
+        $result = $this->client->signInWithPassword([
+            'email'                => $email,
+            'password'             => 'example-password',
+        ]);
+        $uid = $result['data']['user']['id'];
+        $access_token = $result['data']['access_token'];
+        $result = $this->client->getSession($access_token);       
+        $this->assertIsString($access_token);
+
+        $result = $this->client->admin->deleteUser($uid);
+    }
+
+    public function testGetUser(): void
+    {
+        $email = $this->createRandomEmail();
+        $result = $this->client->admin->createUser([
+            'email'                => $email,
+            'password'             => 'example-password',
+            'email_confirm'        => true,
+        ]);
+        $result = $this->client->signInWithPassword([
+            'email'                => $email,
+            'password'             => 'example-password',
+        ]);
+        $uid = $result['data']['user']['id'];
+        $access_token = $result['data']['access_token'];
+        $result = $this->client->getUser($access_token);        
+        $this->assertEquals($email, $result['email']);
+        $result = $this->client->admin->deleteUser($uid);
+    }
+
+    public function testUpdateUser(): void
+    {
+        $email = $this->createRandomEmail();
+        $result = $this->client->admin->createUser([
+            'email'                => $email,
+            'password'             => 'example-password',
+            'email_confirm'        => true,
+        ]);
+
+        $result = $this->client->signInWithPassword([
+            'email'                => $email,
+            'password'             => 'example-password',
+        ]);
+        $uid = $result['data']['user']['id'];
+        $access_token = $result['data']['access_token'];
+        $result = $this->client->updateUser(['email'=>"new-{$email}"], $access_token);
+        fwrite(STDERR, print_r($result, true));
+        $this->assertArrayHasKey('new_email', $result['data']);
+        $this->assertEquals("new-{$email}", $result['data']['new_email']);       
+        $result = $this->client->admin->deleteUser($uid);
+    }
+
+    public function testSetSession(): void
+    {
+        $email = $this->createRandomEmail();
+        $result = $this->client->admin->createUser([
+            'email'                => $email,
+            'password'             => 'example-password',
+            'email_confirm'        => true,
+        ]);
+
+        $result = $this->client->signInWithPassword([
+            'email'                => $email,
+            'password'             => 'example-password',
+        ]);
+        $uid = $result['data']['user']['id'];
+        $access_token = $result['data']['access_token'];
+        $refresh_token = $result['data']['refresh_token'];
+        $result = $this->client->setSession(['access_token'=>$access_token, 'refresh_token' =>$refresh_token]);
+        fwrite(STDERR, print_r($result, true));
+        $this->assertArrayHasKey('session', $result['data']);
+        $this->assertNull($result['error']);   
+        $result = $this->client->admin->deleteUser($uid);
+    }
+
+    public function testEnroll(): void
+    {//Pending
+        $email = $this->createRandomEmail();
+        $result = $this->client->admin->createUser([
+            'email'                => $email,
+            'password'             => 'example-password',
+            'email_confirm'        => true,
+        ]);
+
+        $result = $this->client->signInWithPassword([
+            'email'                => $email,
+            'password'             => 'example-password',
+        ]);
+        $uid = $result['data']['user']['id'];
+        $access_token = $result['data']['access_token'];
+        $result = $this->client->mfa->enroll(['factor_type'=> 'totp'], $access_token);
+        $factor_id = $result['data']['id'];
+        $data_challenge = $this->client->mfa->challenge($factor_id, $access_token);
+        $challenge_id = $data_challenge['data']['id'];
+        $data_verify = $this->client->mfa->verify(
+            $factor_id,
+            $access_token,
+            ['challenge_id'=> $challenge_id, 'code'=> '849822']
+        );
+        unset($result['data']['totp']['qr_code']);
+        fwrite(STDERR, print_r($result, true));        
+        $this->assertArrayHasKey('data', $result);
+        $this->assertNull($result['error']);   
+        $result = $this->client->admin->deleteUser($uid);
+    }
+
+    public function testGetAuthenticatorAssuranceLevel(): void
+    {
+        $email = $this->createRandomEmail();
+        $result = $this->client->admin->createUser([
+            'email'                => $email,
+            'password'             => 'example-password',
+            'email_confirm'        => true,
+        ]);
+
+        $result = $this->client->signInWithPassword([
+            'email'                => $email,
+            'password'             => 'example-password',
+        ]);
+        $uid = $result['data']['user']['id'];
+        $access_token = $result['data']['access_token'];
+        $result = $this->client->_getAuthenticatorAssuranceLevel($access_token);
+        fwrite(STDERR, print_r($result, true));
+        $this->assertArrayHasKey('data', $result);
+        $this->assertNull($result['error']);   
         $result = $this->client->admin->deleteUser($uid);
     }
 
@@ -133,101 +264,4 @@ final class GoTrueClientTest extends TestCase
         return $random_string.'@'.$domain;
     }
 
-    /**
-     * Test Retrieves the details of an existing Storage bucket function.
-     *
-     * @return void
-     */
-    public function testGetBucketWithId(): void
-    {
-        $bucketName = 'bucket'.microtime(false);
-        $this->client->createBucket($bucketName, ['public' => true]);
-        $bucket = $this->client->getBucket($bucketName);
-        $this->assertEquals('200', $bucket->getStatusCode());
-        $this->assertEquals('OK', $bucket->getReasonPhrase());
-        $getValue = json_decode((string) $bucket->getBody());
-        $obj = $getValue->{'id'};
-        $this->assertEquals($bucketName, $obj);
-        $this->client->deleteBucket($bucketName);
-    }
-
-    /**
-     * Test Updates a Storage bucket function.
-     *
-     * @return void
-     */
-    public function testUpdateBucket(): void
-    {
-        $bucketName = 'bucket'.microtime(false);
-        $result = $this->client->createBucket($bucketName, ['public' => true]);
-        $result = $this->client->updateBucket($bucketName, ['public' => true]);
-        $this->assertEquals('200', $result->getStatusCode());
-        $this->assertEquals('OK', $result->getReasonPhrase());
-        $this->assertJsonStringEqualsJsonString('{"message":"Successfully updated"}', (string) $result->getBody());
-        $result = $this->client->deleteBucket($bucketName);
-    }
-
-    /**
-     * Test Removes all objects inside a single bucket function.
-     *
-     * @return void
-     */
-    public function testEmptyBucket()
-    {
-        $bucketName = 'bucket'.microtime(false);
-        $result = $this->client->createBucket($bucketName, ['public' => true]);
-        $result = $this->client->emptyBucket($bucketName);
-        $this->assertEquals('200', $result->getStatusCode());
-        $this->assertEquals('OK', $result->getReasonPhrase());
-        $this->assertJsonStringEqualsJsonString('{"message":"Successfully emptied"}', (string) $result->getBody());
-        $result = $this->client->deleteBucket($bucketName);
-    }
-
-    /**
-     * Test Deletes an existing bucket function.
-     *
-     * @return void
-     */
-    public function testDeleteBucket()
-    {
-        $bucketName = 'bucket'.microtime(false);
-        $result = $this->client->createBucket($bucketName, ['public' => true]);
-        $result = $this->client->deleteBucket($bucketName);
-        $this->assertEquals('200', $result->getStatusCode());
-        $this->assertEquals('OK', $result->getReasonPhrase());
-        $this->assertJsonStringEqualsJsonString('{"message":"Successfully deleted"}', (string) $result->getBody());
-    }
-
-    /**
-     * Test Invailid bucket id function.
-     *
-     * @return void
-     */
-    public function testGetBucketWithInvalidId(): void
-    {
-        try {
-            $this->client->getBucket('not-a-real-bucket-id');
-        } catch (\Exception $e) {
-            $this->assertEquals('The resource was not found', $e->getMessage());
-        }
-    }
-
-    /**
-     * Test Creates a new Storage public bucket function.
-     *
-     * @return void
-     */
-    public function testCreatePrivateBucket(): void
-    {
-        $bucketName = 'bucket'.microtime(false);
-        $result = $this->client->createBucket($bucketName, ['public' => false]);
-        $this->assertEquals('200', $result->getStatusCode());
-        $this->assertEquals('OK', $result->getReasonPhrase());
-        $this->assertJsonStringEqualsJsonString('{"name":"'.$bucketName.'"}', (string) $result->getBody());
-        $resultInfo = $this->client->getBucket($bucketName);
-        $getValue = json_decode((string) $resultInfo->getBody());
-        $isPrivate = $getValue->{'public'};
-        $this->assertFalse($isPrivate);
-        $result = $this->client->deleteBucket($bucketName);
-    }
 }
