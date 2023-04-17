@@ -22,6 +22,7 @@ class GoTrueClient
     protected $storageKey;
     protected $autoRefreshToken;
     protected $persistSession;
+    protected $flowType = 'implicit';
     protected $storage;
     public GoTrueAdminApi $admin;
     public GoTrueMFAApi $mfa;
@@ -305,6 +306,34 @@ class GoTrueClient
         }
     }
 
+    public function refreshSession($jwt = null)
+    {
+        try {
+            if (!$jwt) {
+                $sessionResult = $this->getSession();
+                $sessionData = $sessionResult['data'];
+                $sessionError = $sessionResult['error'];
+
+                if ($sessionError) {
+                    throw $sessionError;
+                }
+
+                // Default to Authorization header if there is no existing session
+                $jwt = $sessionData['session']['access_token'] ?? null;
+            }
+            
+            $data = self::_callRefreshToken($jwt);
+
+            return ['data' => $data, 'error' => null];
+        } catch (\Exception $e) {
+            if (GoTrueError::isGoTrueError($e)) {
+                return ['data' => ['user' => null], 'error' => $e];
+            }
+
+            throw $e;
+        }
+    }
+
     public function setSession($currentSession = [])
     {
         try {
@@ -401,6 +430,47 @@ class GoTrueClient
         }
     }
 
+    public function resetPasswordForEmail(string $email, array $options = []): array {
+        $codeChallenge = null;
+        $codeChallengeMethod = null;
+      
+        if ($this->flowType === 'pkce') {
+          $codeVerifier = Helpers::generatePKCEVerifier();
+          setItemAsync($this->storage, "{$this->storageKey}-code-verifier", $codeVerifier);
+          $codeChallenge = Helpers::generatePKCEChallenge($codeVerifier);
+          $codeChallengeMethod = $codeVerifier === $codeChallenge ? 'plain' : 's256';
+        }
+      
+        try {
+           $params = [
+              'email' => $email,
+              'code_challenge' => $codeChallenge,
+              'code_challenge_method' => $codeChallengeMethod,
+              'gotrue_meta_security' => ['captcha_token' => $options['captchaToken']],
+           ];
+
+            $url = $this->url.'/recover';
+            $body = json_encode($params);
+            $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
+            $response = $this->__request('PUT', $url, $headers, $body);
+            $data = json_decode($response->getBody(), true);
+      
+          return [
+            'data' => $response['data'],
+            'error' => null,
+          ];
+        } catch (\Exception $error) {
+          if (isAuthError($error)) {
+            return [
+              'data' => null,
+              'error' => $error,
+            ];
+          }
+      
+          throw $error;
+        }
+      }
+
     public function getSession($access_token)
     {
         return ['access_token'=>$access_token];
@@ -469,6 +539,7 @@ class GoTrueClient
             if (!$refreshToken) {
                 throw new AuthSessionMissingError();
             }
+            //print_r($refreshToken);
             $data = $this->_refreshAccessToken($refreshToken);
             $error = $data['error'];
 
@@ -501,7 +572,9 @@ class GoTrueClient
     {
         try {
             $url = $this->url.'/token?grant_type=refresh_token';
+            print_r($refreshToken);
             $body = json_encode(['refresh_token' => $refreshToken]);
+            $this->headers['Authorization'] = "Bearer {$refreshToken}";
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('POST', $url, $headers, $body);
             $data = json_decode($response->getBody(), true);

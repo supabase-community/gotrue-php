@@ -118,16 +118,50 @@ final class GoTrueAdminApiTest extends TestCase
     public function testGenerateLink(): void
     {
         $email = $this->createRandomEmail();
+        $params = [
+            'type'     => 'signup',
+            'email'    => $email,
+            'password' => 'secret',
+        ];
+        $result = $this->client->admin->generateLink($params);
+        fwrite(STDERR, print_r($result, true));
+        $this->assertIsArray($result['data']);
+        $this->assertNull($result['error']);
+    }
+
+    public function testUpdateUserById(): void
+    {
+        $email = $this->createRandomEmail();
         $result = $this->client->admin->createUser([
             'email'                => $email,
             'password'             => 'example-password',
             'email_confirm'        => true,
         ]);
-        $uid = $result['data']['user']['id'];
-        $result = $this->client->admin->resetPasswordForEmail(
-            $email,
-            ['redirectTo' => 'https://example.com/update-password']
+        $uid = $result['data']['id'];
+        $result = $this->client->admin->updateUserById(
+            $uid, ['email'=> 'updated-'.$email]
         );
+        fwrite(STDERR, print_r($result, true));
+        $this->assertIsArray($result['data']);
+        $this->assertNull($result['error']);
+        $this->assertEquals('updated-'.$email, $result['data']['email']);
+        $result = $this->client->admin->deleteUser($uid);
+    }
+
+    public function testListAndDeleteFactors(): void
+    {
+        $email = $this->createRandomEmail();
+        $result = $this->client->admin->createUser([
+            'email'                => $email,
+            'password'             => 'example-password',
+            'email_confirm'        => true,
+        ]);
+        $uid = $result['data']['id'];
+        $result = $this->client->admin->_listFactors($uid);
+        foreach ($result['data'] as $key => $factor) {
+            $responseFactorDelete = $this->client->admin->_deleteFactor($uid, $factor['id']);
+            print_r($responseFactorDelete);
+        }
         fwrite(STDERR, print_r($result, true));
         $this->assertIsArray($result['data']);
         $this->assertNull($result['error']);

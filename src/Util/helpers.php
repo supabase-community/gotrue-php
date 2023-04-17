@@ -41,47 +41,64 @@ class Helpers
      * @param {string} $jwt
      *
      * */
-    public static function decodeJWTPayloadtest($jwt)
+
+    public static function decodeJWTPayload($token)
     {
-        return null;
-        $parser = new Parser(new JoseEncoder());
+        // Regex checks for base64url format
+        $base64UrlRegex = '/^([a-z0-9_-]{4})*($|[a-z0-9_-]{3}=?$|[a-z0-9_-]{2}(==)?$)/i';
 
-        try {
-            $token = $parser->parse($jwt);
-            $claims = $token->getClaims();
-            $payload = $claims->get('payload');
-            $decoded = json_decode(Helpers::decodeBase64URL($payload));
+        $parts = explode('.', $token);
 
-            return $decoded;
-        } catch (\Exception $e) {
-            return null;
+        if (count($parts) !== 3) {
+            throw new \Exception('JWT is not valid: not a JWT structure');
         }
+
+        if (!preg_match($base64UrlRegex, $parts[1])) {
+            throw new \Exception('JWT is not valid: payload is not in base64url format');
+        }
+
+        $base64Url = $parts[1];
+
+        return json_decode(Helpers::base64url_decode($base64Url), true);
     }
 
-   public static function decodeJWTPayload($token)
-   {
-       // Regex checks for base64url format
-       $base64UrlRegex = '/^([a-z0-9_-]{4})*($|[a-z0-9_-]{3}=?$|[a-z0-9_-]{2}(==)?$)/i';
+    public static function generatePKCEVerifier()
+    {
+        $verifierLength = 56;
+        $array = array();
 
-       $parts = explode('.', $token);
+        if (function_exists('random_bytes')) {
+            $array = unpack('C*', random_bytes($verifierLength));
+        } elseif (function_exists('openssl_random_pseudo_bytes')) {
+            $array = unpack('C*', openssl_random_pseudo_bytes($verifierLength));
+        } else {
+            $charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+            $charSetLen = strlen($charSet);
+            $verifier = '';
+            for ($i = 0; $i < $verifierLength; $i++) {
+                $verifier .= $charSet[mt_rand(0, $charSetLen - 1)];
+            }
+            return $verifier;
+        }
 
-       if (count($parts) !== 3) {
-           throw new \Exception('JWT is not valid: not a JWT structure');
-       }
+        return implode('', array_map('dechex', $array));
+    }
 
-       if (!preg_match($base64UrlRegex, $parts[1])) {
-           throw new \Exception('JWT is not valid: payload is not in base64url format');
-       }
+    public static function generatePKCEChallenge($verifier)
+    {
+        if (!function_exists('hash')) {
+            trigger_error('hash() function is not supported. Code challenge method will default to use plain instead of sha256.', E_USER_WARNING);
+            return $verifier;
+        }
+        $hashed = hash('sha256', $verifier, true);
+        return base64_encode($hashed);
+    }
 
-       $base64Url = $parts[1];
 
-       return json_decode(Helpers::base64url_decode($base64Url), true);
-   }
+    public static function base64url_decode($base64Url)
+    {
+        $base64 = strtr($base64Url, '-_', '+/');
 
-      public static function base64url_decode($base64Url)
-      {
-          $base64 = strtr($base64Url, '-_', '+/');
-
-          return base64_decode($base64);
-      }
+        return base64_decode($base64);
+    }
 }
