@@ -54,7 +54,6 @@ class GoTrueClient
         $this->autoRefreshToken = $this->settings['autoRefreshToken'] ?? null;
         $this->persistSession = $this->settings['persistSession'] ?? null;
         $this->detectSessionInUrl = $this->settings['detectSessionInUrl'] ?? false;
-        
 
         if (!$this->url) {
             throw new \Exception('No URL provided');
@@ -153,9 +152,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -174,6 +173,7 @@ class GoTrueClient
             if (GoTrueError::isGoTrueError($e)) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $e];
             }
+
             throw $e;
         }
     }
@@ -193,9 +193,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url . '/token?grant_type=password', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url . '/token?grant_type=password', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -241,9 +241,9 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url . '/otp', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url . '/otp', $headers, $body);
+                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
@@ -261,12 +261,14 @@ class GoTrueClient
             if (GoTrueError::isGoTrueError($e)) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $e];
             }
+
             throw $e;
         }
     }
 
     /**
      * Gets the current user details if there is an existing session.
+     *
      * @param jwt Takes in an optional access token jwt. If no jwt is provided, getUser() will attempt to get the jwt from the current session.
      */
     public function getUser($jwt = null)
@@ -285,10 +287,11 @@ class GoTrueClient
                 $jwt = $sessionData['session']['access_token'] ?? null;
             }
             $this->headers['Authorization'] = "Bearer {$jwt}";
-            $url = $this->url . '/user';
+            $url = $this->url.'/user';
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('GET', $url, $headers);
             $user = json_decode($response->getBody(), true);
+
             return $user;
         } catch (\Exception $e) {
             if (GoTrueError::isGoTrueError($e)) {
@@ -319,7 +322,7 @@ class GoTrueClient
             }
             $this->headers['Authorization'] = "Bearer {$jwt}";
             $redirectTo = isset($options['redirectTo']) ? "?redirect_to={$options['redirectTo']}" : null;
-            $url = $this->url . '/user' . $redirectTo;
+            $url = $this->url.'/user'.$redirectTo;
             $body = json_encode($attrs);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('PUT', $url, $headers, $body);
@@ -339,6 +342,7 @@ class GoTrueClient
      * Returns a new session, regardless of expiry status.
      * Takes in an optional current session. If not passed in, then refreshSession() will attempt to retrieve it from getSession().
      * If the current session's refresh token is invalid, an error will be thrown.
+     *
      * @param currentSession The current session. If passed in, it must contain a refresh token.
      */
     public function refreshSession($jwt = null)
@@ -372,6 +376,7 @@ class GoTrueClient
     /**
      * Sets the session data from the current session. If the current session is expired, setSession will take care of refreshing it to obtain a new session.
      * If the refresh token or access token in the current session is invalid, an error will be thrown.
+     *
      * @param currentSession The current session that minimally contains an access token and refresh token.
      */
     public function setSession($currentSession = [])
@@ -448,11 +453,11 @@ class GoTrueClient
         }
 
         $this->_removeSession();
-        $this->_notifyAllSubscribers("SIGNED_OUT", null);
+        $this->_notifyAllSubscribers('SIGNED_OUT', null);
     }
 
     /**
-     * {@see GoTrueMFAApi#listFactors}
+     * {@see GoTrueMFAApi#listFactors}.
      */
     public function listFactors($jwt)
     {
@@ -472,6 +477,7 @@ class GoTrueClient
 
     /**
      * Sends a password reset request to an email address.
+     *
      * @param email The email address of the user.
      * @param options.redirectTo The URL to send the user to after they click the password reset link.
      * @param options.captchaToken Verification token received when the user completes the captcha on the site.
@@ -490,26 +496,26 @@ class GoTrueClient
 
         try {
             $params = [
-                'email' => $email,
-                'code_challenge' => $codeChallenge,
+                'email'                 => $email,
+                'code_challenge'        => $codeChallenge,
                 'code_challenge_method' => $codeChallengeMethod,
-                'gotrue_meta_security' => ['captcha_token' => $options['captchaToken']],
+                'gotrue_meta_security'  => ['captcha_token' => $options['captchaToken']],
             ];
 
-            $url = $this->url . '/recover';
+            $url = $this->url.'/recover';
             $body = json_encode($params);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('PUT', $url, $headers, $body);
             $data = json_decode($response->getBody(), true);
 
             return [
-                'data' => $data,
+                'data'  => $data,
                 'error' => null,
             ];
         } catch (\Exception $error) {
             if (isAuthError($error)) {
                 return [
-                    'data' => null,
+                    'data'  => null,
                     'error' => $error,
                 ];
             }
@@ -528,7 +534,7 @@ class GoTrueClient
     }
 
     /**
-     * {@see GoTrueMFAApi#getAuthenticatorAssuranceLevel}
+     * {@see GoTrueMFAApi#getAuthenticatorAssuranceLevel}.
      */
     public function _getAuthenticatorAssuranceLevel($access_token)
     {
@@ -620,7 +626,7 @@ class GoTrueClient
     public function _refreshAccessToken($refreshToken)
     {
         try {
-            $url = $this->url . '/token?grant_type=refresh_token';
+            $url = $this->url.'/token?grant_type=refresh_token';
             print_r($refreshToken);
             $body = json_encode(['refresh_token' => $refreshToken]);
             $this->headers['Authorization'] = "Bearer {$refreshToken}";
@@ -651,7 +657,7 @@ class GoTrueClient
     }
 
     /**
-     * Gets the session data from a URL string
+     * Gets the session data from a URL string.
      */
     private function _getSessionFromUrl()
     {

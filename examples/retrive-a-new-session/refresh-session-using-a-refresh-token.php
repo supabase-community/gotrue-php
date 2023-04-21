@@ -13,20 +13,20 @@ $client = new GoTrueClient($reference_id, $api_key, [
     'storageKey'         => $api_key,
 ], $domain, $scheme, $path);
 
-        $email = $ramdom_email;
-        $result = $client->admin->createUser([
-            'email'                => $email,
-            'password'             => 'example-password',
-            'email_confirm'        => true,
-        ]);
+$email = $ramdom_email;
+$result = $client->admin->createUser([
+    'email'                => $email,
+    'password'             => 'example-password',
+    'email_confirm'        => true,
+]);
 
-        $result = $client->signInWithPassword([
-            'email'                => $email,
-            'password'             => 'example-password',
-        ]);
-        print_r($result);
-        $uid = $result['data']['user']['id'];
-        $access_token = $result['data']['access_token'];
-        $result = $client->refreshSession($access_token);
-        print_r($result);
-        $result = $client->admin->deleteUser($uid);
+$result = $client->signInWithPassword([
+    'email'                => $email,
+    'password'             => 'example-password',
+]);
+print_r($result);
+$uid = $result['data']['user']['id'];
+$access_token = $result['data']['access_token'];
+$result = $client->refreshSession($access_token);
+print_r($result);
+$result = $client->admin->deleteUser($uid);

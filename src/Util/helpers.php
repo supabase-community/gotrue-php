@@ -41,7 +41,6 @@ class Helpers
      * @param {string} $jwt
      *
      * */
-
     public static function decodeJWTPayload($token)
     {
         // Regex checks for base64url format
@@ -65,7 +64,7 @@ class Helpers
     public static function generatePKCEVerifier()
     {
         $verifierLength = 56;
-        $array = array();
+        $array = [];
 
         if (function_exists('random_bytes')) {
             $array = unpack('C*', random_bytes($verifierLength));
@@ -78,6 +77,7 @@ class Helpers
             for ($i = 0; $i < $verifierLength; $i++) {
                 $verifier .= $charSet[mt_rand(0, $charSetLen - 1)];
             }
+
             return $verifier;
         }
 
@@ -88,12 +88,13 @@ class Helpers
     {
         if (!function_exists('hash')) {
             trigger_error('hash() function is not supported. Code challenge method will default to use plain instead of sha256.', E_USER_WARNING);
+
             return $verifier;
         }
         $hashed = hash('sha256', $verifier, true);
+
         return base64_encode($hashed);
     }
-
 
     public static function base64url_decode($base64Url)
     {

@@ -139,7 +139,8 @@ final class GoTrueAdminApiTest extends TestCase
         ]);
         $uid = $result['data']['id'];
         $result = $this->client->admin->updateUserById(
-            $uid, ['email'=> 'updated-'.$email]
+            $uid,
+            ['email'=> 'updated-'.$email]
         );
         fwrite(STDERR, print_r($result, true));
         $this->assertIsArray($result['data']);
