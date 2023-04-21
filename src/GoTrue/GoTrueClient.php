@@ -51,24 +51,34 @@ class GoTrueClient
         $this->url = !empty($reference_id) ? "{$scheme}://{$reference_id}.{$domain}{$path}" : "{$scheme}://{$domain}{$path}";
         $this->settings = array_merge(Constants::getDefaultHeaders(), $options);
         $this->storageKey = $this->settings['storageKey'] ?? null;
-        $this->autoRefreshToken = $this->settings['autoRefreshToken'];
-        $this->persistSession = $this->settings['persistSession'];
+        $this->autoRefreshToken = $this->settings['autoRefreshToken'] ?? null;
+        $this->persistSession = $this->settings['persistSession'] ?? null;
         $this->detectSessionInUrl = $this->settings['detectSessionInUrl'] ?? false;
+        
 
         if (!$this->url) {
             throw new \Exception('No URL provided');
         }
 
-        $this->headers = $headers ?? null;
+        $this->headers = array_merge(Constants::getDefaultHeaders(), $headers);
+
+        /**
+         * Namespace for the GoTrue admin methods.
+         * These methods should only be used in a trusted server-side environment.
+         */
         $this->admin = new GoTrueAdminApi($reference_id, $api_key, [
             'url'     => $this->url,
             'headers' => $this->headers,
         ], $domain, $scheme, $path);
 
+        /**
+         * Namespace for the MFA methods.
+         */
         $this->mfa = new GoTrueMFAApi($reference_id, $api_key, [
             'url'     => $this->url,
             'headers' => $this->headers,
         ], $domain, $scheme, $path);
+
         $this->storage = new Storage();
         $this->stateChangeEmitters = [];
         $this->initializePromise = $this->initialize();
@@ -85,6 +95,7 @@ class GoTrueClient
 
     public function _initialize()
     {
+        $data = [];
         if ($this->initializePromise) {
             return $this->initializePromise;
         }
@@ -96,12 +107,12 @@ class GoTrueClient
                 return ['error' => $e];
             }
 
-            $session = $data->session;
+            $session = $data['session'];
 
             $this->_saveSession($session);
             $this->_notifyAllSubscribers('SIGNED_IN', $session);
 
-            if ($data->redirectType == 'recovery') {
+            if ($data['redirectType'] == 'recovery') {
                 $this->_notifyAllSubscribers('PASSWORD_RECOVERY', $session);
             }
 
@@ -126,6 +137,15 @@ class GoTrueClient
     {
     }
 
+    /**
+     * Creates a new user.
+     *
+     * Be aware that if a user account exists in the system you may get back an
+     * error message that attempts to hide this information from the user.
+     *
+     * @returns A logged-in session if the server has "autoconfirm" ON
+     * @returns A user if the server has "autoconfirm" OFF
+     */
     public function signUp($credentials)
     {
         try {
@@ -133,25 +153,14 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url.'/signup', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/signup', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
 
-            /*$status = $response->getStatusCode();
-            $statusText = $response->getReasonPhrase();
-            $error = null;
-
-            if ($status != 200) {
-                return ['data' => ['user' => null, 'session' => null], 'error' => $response];
-            }*/
-
-            //return $response;
-
             $data = json_decode($response->getBody(), true);
-
             $session = isset($data['session']) ? $data['session'] : null;
             $user = $data;
 
@@ -160,16 +169,23 @@ class GoTrueClient
                 $this->_notifyAllSubscribers('SIGNED_IN', $session);
             }
 
-            return ['data' => ['user' => $user, 'session' => $session], 'error' => $error];
+            return ['data' => ['user' => $user, 'session' => $session], 'error' => null];
         } catch (\Exception $e) {
             if (GoTrueError::isGoTrueError($e)) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $e];
             }
-
             throw $e;
         }
     }
 
+    /**
+     * Log in an existing user with an email and password or phone and password.
+     *
+     * Be aware that you may get back an error message that will not distinguish
+     * between the cases where the account does not exist or that the
+     * email/phone and password combination is wrong or that the account can only
+     * be accessed via social login.
+     */
     public function signInWithPassword($credentials)
     {
         try {
@@ -177,32 +193,22 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/token?grant_type=password', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url.'/token?grant_type=password', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/token?grant_type=password', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
 
-            $status = $response->getStatusCode();
-            $statusText = $response->getReasonPhrase();
-            $error = null;
-
-            if ($status != 200) {
-                return ['data' => ['user' => null, 'session' => null], 'error' => $response];
-            }
-
             $data = json_decode($response->getBody(), true);
-
             $session = isset($data['session']) ? $data['session'] : null;
-            $user = $data;
 
             if (isset($data['session'])) {
                 $this->_saveSession($session);
                 $this->_notifyAllSubscribers('SIGNED_IN', $session);
             }
 
-            return ['data' => $data, 'error' => $error];
+            return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             if (GoTrueError::isGoTrueError($e)) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $e];
@@ -212,6 +218,22 @@ class GoTrueClient
         }
     }
 
+    /**
+     * Log in a user using magiclink or a one-time password (OTP).
+     *
+     * If the `{{ .ConfirmationURL }}` variable is specified in the email template, a magiclink will be sent.
+     * If the `{{ .Token }}` variable is specified in the email template, an OTP will be sent.
+     * If you're using phone sign-ins, only an OTP will be sent. You won't be able to send a magiclink for phone sign-ins.
+     *
+     * Be aware that you may get back an error message that will not distinguish
+     * between the cases where the account does not exist or, that the account
+     * can only be accessed via social login.
+     *
+     * Do note that you will need to configure a Whatsapp sender on Twilio
+     * if you are using phone sign in with the 'whatsapp' channel. The whatsapp
+     * channel is not supported on other providers
+     * at this time.
+     */
     public function signInWithOtp($credentials)
     {
         try {
@@ -219,46 +241,39 @@ class GoTrueClient
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
             $body = json_encode($credentials);
             if (isset($credentials['email'])) {
-                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/otp', $headers, $body);
             } elseif (isset($credentials['phone'])) {
-                $response = $this->__request('POST', $this->url.'/otp', $headers, $body);
+                $response = $this->__request('POST', $this->url . '/otp', $headers, $body);
             } else {
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
 
-            $status = $response->getStatusCode();
-            $statusText = $response->getReasonPhrase();
-            $error = null;
-
-            if ($status != 200) {
-                return ['data' => ['user' => null, 'session' => null], 'error' => $response];
-            }
-
             $data = json_decode($response->getBody(), true);
-
             $session = isset($data['session']) ? $data['session'] : null;
-            $user = $data;
 
             if (isset($data['session'])) {
                 $this->_saveSession($session);
                 $this->_notifyAllSubscribers('SIGNED_IN', $session);
             }
 
-            return ['data' => $data, 'error' => $error];
+            return ['data' => $data, 'error' => null];
         } catch (\Exception $e) {
             if (GoTrueError::isGoTrueError($e)) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $e];
             }
-
             throw $e;
         }
     }
 
+    /**
+     * Gets the current user details if there is an existing session.
+     * @param jwt Takes in an optional access token jwt. If no jwt is provided, getUser() will attempt to get the jwt from the current session.
+     */
     public function getUser($jwt = null)
     {
         try {
             if (!$jwt) {
-                $sessionResult = $this->getSession();
+                $sessionResult = $this->getSession($jwt);
                 $sessionData = $sessionResult['data'];
                 $sessionError = $sessionResult['error'];
 
@@ -270,18 +285,11 @@ class GoTrueClient
                 $jwt = $sessionData['session']['access_token'] ?? null;
             }
             $this->headers['Authorization'] = "Bearer {$jwt}";
-            $url = $this->url.'/user';
+            $url = $this->url . '/user';
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('GET', $url, $headers);
             $user = json_decode($response->getBody(), true);
-
             return $user;
-
-            /*return await _request($this->fetch, 'GET', $this->url.'/user', [
-                'headers' => $this->headers,
-                'jwt' => $jwt,
-                'xform' => '_userResponse'
-            ]);*/
         } catch (\Exception $e) {
             if (GoTrueError::isGoTrueError($e)) {
                 return ['data' => ['user' => null], 'error' => $e];
@@ -291,11 +299,14 @@ class GoTrueClient
         }
     }
 
+    /**
+     * Updates user data for a logged in user.
+     */
     public function updateUser($attrs, $jwt = null, $options = [])
     {
         try {
             if (!$jwt) {
-                $sessionResult = $this->getSession();
+                $sessionResult = $this->getSession($jwt);
                 $sessionData = $sessionResult['data'];
                 $sessionError = $sessionResult['error'];
 
@@ -308,7 +319,7 @@ class GoTrueClient
             }
             $this->headers['Authorization'] = "Bearer {$jwt}";
             $redirectTo = isset($options['redirectTo']) ? "?redirect_to={$options['redirectTo']}" : null;
-            $url = $this->url.'/user'.$redirectTo;
+            $url = $this->url . '/user' . $redirectTo;
             $body = json_encode($attrs);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('PUT', $url, $headers, $body);
@@ -324,11 +335,17 @@ class GoTrueClient
         }
     }
 
+    /**
+     * Returns a new session, regardless of expiry status.
+     * Takes in an optional current session. If not passed in, then refreshSession() will attempt to retrieve it from getSession().
+     * If the current session's refresh token is invalid, an error will be thrown.
+     * @param currentSession The current session. If passed in, it must contain a refresh token.
+     */
     public function refreshSession($jwt = null)
     {
         try {
             if (!$jwt) {
-                $sessionResult = $this->getSession();
+                $sessionResult = $this->getSession($jwt);
                 $sessionData = $sessionResult['data'];
                 $sessionError = $sessionResult['error'];
 
@@ -339,7 +356,7 @@ class GoTrueClient
                 // Default to Authorization header if there is no existing session
                 $jwt = $sessionData['session']['access_token'] ?? null;
             }
-            
+
             $data = self::_callRefreshToken($jwt);
 
             return ['data' => $data, 'error' => null];
@@ -352,13 +369,17 @@ class GoTrueClient
         }
     }
 
+    /**
+     * Sets the session data from the current session. If the current session is expired, setSession will take care of refreshing it to obtain a new session.
+     * If the refresh token or access token in the current session is invalid, an error will be thrown.
+     * @param currentSession The current session that minimally contains an access token and refresh token.
+     */
     public function setSession($currentSession = [])
     {
         try {
             if (empty($currentSession['access_token']) || empty($currentSession['refresh_token'])) {
                 throw new AuthSessionMissingError();
             }
-
             $timeNow = time();
             $expiresAt = $timeNow;
             $hasExpired = true;
@@ -368,8 +389,6 @@ class GoTrueClient
                 $expiresAt = $payload['exp'];
                 $hasExpired = $expiresAt <= $timeNow ? true : false;
             }
-
-            //return $hasExpired;
 
             if ($hasExpired) {
                 $result = $this->_callRefreshToken($currentSession['refresh_token']);
@@ -396,8 +415,8 @@ class GoTrueClient
                     'expires_at'    => $expiresAt,
                 ];
 
-                //$this->_saveSession($session);
-                //$this->_notifyAllSubscribers('SIGNED_IN', $session);
+                $this->_saveSession($session);
+                $this->_notifyAllSubscribers('SIGNED_IN', $session);
             }
 
             return ['data' => ['user' => $session['user'], 'session' => $session], 'error' => null];
@@ -410,17 +429,17 @@ class GoTrueClient
         }
     }
 
+    /**
+     * Inside a browser context, `sign_out` will remove the logged in user from the
+     * browser session and log them out - removing all items from localstorage and
+     * then trigger a `"SIGNED_OUT"` event.
+     * For server-side management, you can revoke all refresh tokens for a user by
+     * passing a user's JWT through to `api.sign_out`.
+     * There is no way to revoke a user's access token jwt until it expires.
+     * It is recommended to set a shorter expiry on the jwt for this reason.
+     */
     public function signOut($access_token = null)
     {
-        /**
-         * Inside a browser context, `sign_out` will remove the logged in user from the
-         * browser session and log them out - removing all items from localstorage and
-         * then trigger a `"SIGNED_OUT"` event.
-         * For server-side management, you can revoke all refresh tokens for a user by
-         * passing a user's JWT through to `api.sign_out`.
-         * There is no way to revoke a user's access token jwt until it expires.
-         * It is recommended to set a shorter expiry on the jwt for this reason.
-         */
         $session = $this->getSession($access_token);
         $access_token = $session ? $session['access_token'] : null;
 
@@ -428,10 +447,13 @@ class GoTrueClient
             $this->admin->signOut($access_token);
         }
 
-        //$this->_remove_session();
-        //$this->_notify_all_subscribers("SIGNED_OUT", null);
+        $this->_removeSession();
+        $this->_notifyAllSubscribers("SIGNED_OUT", null);
     }
 
+    /**
+     * {@see GoTrueMFAApi#listFactors}
+     */
     public function listFactors($jwt)
     {
         try {
@@ -442,58 +464,72 @@ class GoTrueClient
                 return $factor['factor_type'] === 'totp' && $factor['status'] === 'verified';
             });
 
-            return ['data' => ['all'=> $factors, 'totp' =>$totp], 'error' => null];
+            return ['data' => ['all' => $factors, 'totp' => $totp], 'error' => null];
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
-    public function resetPasswordForEmail(string $email, array $options = []): array {
+    /**
+     * Sends a password reset request to an email address.
+     * @param email The email address of the user.
+     * @param options.redirectTo The URL to send the user to after they click the password reset link.
+     * @param options.captchaToken Verification token received when the user completes the captcha on the site.
+     */
+    public function resetPasswordForEmail(string $email, array $options = []): array
+    {
         $codeChallenge = null;
         $codeChallengeMethod = null;
-      
-        if ($this->flowType === 'pkce') {
-          $codeVerifier = Helpers::generatePKCEVerifier();
-          setItemAsync($this->storage, "{$this->storageKey}-code-verifier", $codeVerifier);
-          $codeChallenge = Helpers::generatePKCEChallenge($codeVerifier);
-          $codeChallengeMethod = $codeVerifier === $codeChallenge ? 'plain' : 's256';
-        }
-      
-        try {
-           $params = [
-              'email' => $email,
-              'code_challenge' => $codeChallenge,
-              'code_challenge_method' => $codeChallengeMethod,
-              'gotrue_meta_security' => ['captcha_token' => $options['captchaToken']],
-           ];
 
-            $url = $this->url.'/recover';
+        if ($this->flowType === 'pkce') {
+            $codeVerifier = Helpers::generatePKCEVerifier();
+            $this->setItemAsync($this->storage, "{$this->storageKey}-code-verifier", $codeVerifier);
+            $codeChallenge = Helpers::generatePKCEChallenge($codeVerifier);
+            $codeChallengeMethod = $codeVerifier === $codeChallenge ? 'plain' : 's256';
+        }
+
+        try {
+            $params = [
+                'email' => $email,
+                'code_challenge' => $codeChallenge,
+                'code_challenge_method' => $codeChallengeMethod,
+                'gotrue_meta_security' => ['captcha_token' => $options['captchaToken']],
+            ];
+
+            $url = $this->url . '/recover';
             $body = json_encode($params);
             $headers = array_merge($this->headers, ['Content-Type' => 'application/json', 'noResolveJson' => true]);
             $response = $this->__request('PUT', $url, $headers, $body);
             $data = json_decode($response->getBody(), true);
-      
-          return [
-            'data' => $response['data'],
-            'error' => null,
-          ];
-        } catch (\Exception $error) {
-          if (isAuthError($error)) {
-            return [
-              'data' => null,
-              'error' => $error,
-            ];
-          }
-      
-          throw $error;
-        }
-      }
 
-    public function getSession($access_token)
-    {
-        return ['access_token'=>$access_token];
+            return [
+                'data' => $data,
+                'error' => null,
+            ];
+        } catch (\Exception $error) {
+            if (isAuthError($error)) {
+                return [
+                    'data' => null,
+                    'error' => $error,
+                ];
+            }
+
+            throw $error;
+        }
     }
 
+    /**
+     * Returns the session, refreshing it if necessary.
+     * The session returned can be null if the session is not detected which can happen in the event a user is not signed-in or has logged out.
+     */
+    public function getSession($access_token)
+    {
+        return ['access_token' => $access_token];
+    }
+
+    /**
+     * {@see GoTrueMFAApi#getAuthenticatorAssuranceLevel}
+     */
     public function _getAuthenticatorAssuranceLevel($access_token)
     {
         try {
@@ -557,20 +593,15 @@ class GoTrueClient
             if (!$refreshToken) {
                 throw new AuthSessionMissingError();
             }
-            //print_r($refreshToken);
-            $data = $this->_refreshAccessToken($refreshToken);
-            $error = $data['error'];
 
-            if ($error) {
-                throw $error;
-            }
+            $data = $this->_refreshAccessToken($refreshToken);
 
             if (!$data['session']) {
                 throw new AuthSessionMissingError();
             }
 
-            //await $this->_saveSession($data['session']);
-            //$this->_notifyAllSubscribers('TOKEN_REFRESHED', $data['session']);
+            $this->_saveSession($data['session']);
+            $this->_notifyAllSubscribers('TOKEN_REFRESHED', $data['session']);
 
             $result = ['session' => $data['session'], 'error' => null];
 
@@ -589,7 +620,7 @@ class GoTrueClient
     public function _refreshAccessToken($refreshToken)
     {
         try {
-            $url = $this->url.'/token?grant_type=refresh_token';
+            $url = $this->url . '/token?grant_type=refresh_token';
             print_r($refreshToken);
             $body = json_encode(['refresh_token' => $refreshToken]);
             $this->headers['Authorization'] = "Bearer {$refreshToken}";
@@ -601,5 +632,28 @@ class GoTrueClient
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    private function _saveSession($session = [])
+    {
+    }
+
+    private function _notifyAllSubscribers($evnt, $session = [])
+    {
+    }
+
+    private function setItemAsync($storage, $storageVerifier, $codeVerifier)
+    {
+    }
+
+    private function _isImplicitGrantFlow()
+    {
+    }
+
+    /**
+     * Gets the session data from a URL string
+     */
+    private function _getSessionFromUrl()
+    {
     }
 }
