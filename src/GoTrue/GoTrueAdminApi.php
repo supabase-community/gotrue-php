@@ -6,6 +6,7 @@ use GuzzleHttp\Psr7;
 use Psr\Http\Message\ResponseInterface;
 use Supabase\Util\Request;
 
+
 class GoTrueAdminApi
 {
     protected $url;

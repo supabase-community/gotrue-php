@@ -29,6 +29,22 @@ class GoTrueClient
     protected $url;
     protected $headers;
 
+    /**
+     * Get the url.
+     */
+    public function __getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * Get the headers.
+     */
+    public function __getHeaders(): array
+    {
+        return $this->headers;
+    }
+
     public function __construct($reference_id, $api_key, $options = [], $domain = 'supabase.co', $scheme = 'https', $path = '/auth/v1')
     {
         $headers = ['Authorization' => "Bearer {$api_key}", 'apikey' => $api_key];
@@ -124,13 +140,15 @@ class GoTrueClient
                 throw new GoTrueError('You must provide either an email or phone number and a password');
             }
 
-            $status = $response->getStatusCode();
+            /*$status = $response->getStatusCode();
             $statusText = $response->getReasonPhrase();
             $error = null;
 
             if ($status != 200) {
                 return ['data' => ['user' => null, 'session' => null], 'error' => $response];
-            }
+            }*/
+
+            //return $response;
 
             $data = json_decode($response->getBody(), true);
 
