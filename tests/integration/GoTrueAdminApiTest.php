@@ -52,7 +52,6 @@ final class GoTrueAdminApiTest extends TestCase
             'page'   => 1,
             'perPage'=> 2,
         ]);
-        fwrite(STDERR, print_r($result, true));
         $this->assertNull($result['error']);
         $this->assertIsArray($result['data']);
     }
@@ -65,7 +64,6 @@ final class GoTrueAdminApiTest extends TestCase
             'password'             => 'example-password',
             'email_confirm'        => true,
         ]);
-        fwrite(STDERR, print_r($result, true));
         $uid = $result['data']['id'];
         $this->assertNull($result['error']);
         $this->assertIsArray($result['data']);
@@ -82,7 +80,6 @@ final class GoTrueAdminApiTest extends TestCase
         ]);
         $uid = $result['data']['id'];
         $result = $this->client->admin->deleteUser($uid);
-        fwrite(STDERR, print_r($result, true));
         $this->assertNull($result['error']);
         $this->assertIsArray($result['data']);
     }
@@ -91,7 +88,6 @@ final class GoTrueAdminApiTest extends TestCase
     {
         $email = $this->createRandomEmail();
         $result = $this->client->admin->inviteUserByEmail($email);
-        fwrite(STDERR, print_r($result, true));
         $this->assertNull($result['error']);
         $this->assertIsArray($result['data']);
     }
@@ -109,7 +105,6 @@ final class GoTrueAdminApiTest extends TestCase
             $email,
             ['redirectTo' => 'https://example.com/update-password']
         );
-        fwrite(STDERR, print_r($result, true));
         $this->assertIsArray($result['data']);
         $this->assertNull($result['error']);
         $result = $this->client->admin->deleteUser($uid);
@@ -124,7 +119,6 @@ final class GoTrueAdminApiTest extends TestCase
             'password' => 'secret',
         ];
         $result = $this->client->admin->generateLink($params);
-        fwrite(STDERR, print_r($result, true));
         $this->assertIsArray($result['data']);
         $this->assertNull($result['error']);
     }
@@ -142,7 +136,6 @@ final class GoTrueAdminApiTest extends TestCase
             $uid,
             ['email'=> 'updated-'.$email]
         );
-        fwrite(STDERR, print_r($result, true));
         $this->assertIsArray($result['data']);
         $this->assertNull($result['error']);
         $this->assertEquals('updated-'.$email, $result['data']['email']);
@@ -161,9 +154,7 @@ final class GoTrueAdminApiTest extends TestCase
         $result = $this->client->admin->_listFactors($uid);
         foreach ($result['data'] as $key => $factor) {
             $responseFactorDelete = $this->client->admin->_deleteFactor($uid, $factor['id']);
-            print_r($responseFactorDelete);
         }
-        fwrite(STDERR, print_r($result, true));
         $this->assertIsArray($result['data']);
         $this->assertNull($result['error']);
         $result = $this->client->admin->deleteUser($uid);

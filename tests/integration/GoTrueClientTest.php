@@ -169,7 +169,6 @@ final class GoTrueClientTest extends TestCase
         $uid = $result['data']['user']['id'];
         $access_token = $result['data']['access_token'];
         $result = $this->client->updateUser(['email'=>"new-{$email}"], $access_token);
-        fwrite(STDERR, print_r($result, true));
         $this->assertArrayHasKey('new_email', $result['data']);
         $this->assertEquals("new-{$email}", $result['data']['new_email']);
         $result = $this->client->admin->deleteUser($uid);
@@ -192,7 +191,6 @@ final class GoTrueClientTest extends TestCase
         $access_token = $result['data']['access_token'];
         $refresh_token = $result['data']['refresh_token'];
         $result = $this->client->setSession(['access_token'=>$access_token, 'refresh_token' =>$refresh_token]);
-        fwrite(STDERR, print_r($result, true));
         $this->assertArrayHasKey('session', $result['data']);
         $this->assertNull($result['error']);
         $result = $this->client->admin->deleteUser($uid);
@@ -223,7 +221,6 @@ final class GoTrueClientTest extends TestCase
             ['challenge_id'=> $challenge_id, 'code'=> '849822']
         );
         unset($result['data']['totp']['qr_code']);
-        fwrite(STDERR, print_r($result, true));
         $this->assertArrayHasKey('data', $result);
         $this->assertNull($result['error']);
         $result = $this->client->admin->deleteUser($uid);
@@ -245,7 +242,6 @@ final class GoTrueClientTest extends TestCase
         $uid = $result['data']['user']['id'];
         $access_token = $result['data']['access_token'];
         $result = $this->client->_getAuthenticatorAssuranceLevel($access_token);
-        fwrite(STDERR, print_r($result, true));
         $this->assertArrayHasKey('data', $result);
         $this->assertNull($result['error']);
         $result = $this->client->admin->deleteUser($uid);
