@@ -44,7 +44,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -80,7 +80,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -106,7 +106,7 @@ class GoTrueClientTest extends TestCase
     }
 
     /**
-     * Test the request parameters needed for 
+     * Test the request parameters needed for
      * Log in a user using magiclink or a one-time password (OTP).
      *
      * @return void
@@ -117,7 +117,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -143,8 +143,8 @@ class GoTrueClientTest extends TestCase
     }
 
     /**
-     * Test the request parameters needed for 
-     * remove the logged in user. Pending
+     * Test the request parameters needed for
+     * remove the logged in user. Pending.
      *
      * @return void
      */
@@ -154,7 +154,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -186,7 +186,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[getSession]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -210,7 +210,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -219,10 +219,10 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('{"refresh_token":"auth-token"}', $body);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/token?grant_type=refresh_token', $url);
             $this->assertEquals([
-                'X-Client-Info' => 'gotrue-php/0.0.1',
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'X-Client-Info'  => 'gotrue-php/0.0.1',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
@@ -244,7 +244,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -265,7 +265,7 @@ class GoTrueClientTest extends TestCase
     }
 
     /**
-     * Test the request parameters needed for 
+     * Test the request parameters needed for
      * Updates user data for a logged in user.
      *
      * @return void
@@ -276,7 +276,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
         $mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers, $body) {
@@ -284,10 +284,10 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('{"email":"new-email"}', $body);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/user', $url);
             $this->assertEquals([
-                'X-Client-Info' => 'gotrue-php/0.0.1',
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'X-Client-Info'  => 'gotrue-php/0.0.1',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
@@ -309,7 +309,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
         $mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers, $body) {
@@ -341,7 +341,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
         $mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers, $body) {
@@ -349,10 +349,10 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('{"email":"email","code_challenge":null,"code_challenge_method":null,"gotrue_meta_security":{"captcha_token":null}}', $body);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/recover', $url);
             $this->assertEquals([
-                'X-Client-Info' => 'gotrue-php/0.0.1',
-                'Authorization' => 'Bearer mokerymock',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'X-Client-Info'  => 'gotrue-php/0.0.1',
+                'Authorization'  => 'Bearer mokerymock',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
@@ -375,7 +375,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueMFAApi[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -384,9 +384,9 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('{"factor_type":"totp"}', $body);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors', $url);
             $this->assertEquals([
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
@@ -409,7 +409,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueMFAApi[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -417,9 +417,9 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('POST', $scheme);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors/factor-id/challenge', $url);
             $this->assertEquals([
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
@@ -442,17 +442,17 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueMFAApi[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
         $mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers) {
-            $this->assertEquals('POST', $scheme);    
+            $this->assertEquals('POST', $scheme);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors/factor-id/verify', $url);
             $this->assertEquals([
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
@@ -464,8 +464,8 @@ class GoTrueClientTest extends TestCase
 
     /**
      * Test the request parameters needed a
-     * Helper method which creates a challenge 
-     * and immediately uses the given code to verify against it thereafter
+     * Helper method which creates a challenge
+     * and immediately uses the given code to verify against it thereafter.
      *
      * @return void
      */
@@ -475,7 +475,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueMFAApi[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -483,9 +483,9 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('POST', $scheme);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors/factor-id/challenge', $url);
             $this->assertEquals([
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
@@ -497,7 +497,7 @@ class GoTrueClientTest extends TestCase
 
     /**
      * Test the request parameters needed to
-     * Unenroll removes a MFA factor. 
+     * Unenroll removes a MFA factor.
      *
      * @return void
      */
@@ -507,7 +507,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueMFAApi[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -515,9 +515,9 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('DELETE', $scheme);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors/factor-id', $url);
             $this->assertEquals([
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
@@ -529,7 +529,7 @@ class GoTrueClientTest extends TestCase
 
     /**
      * Test the request parameters needed to
-     * Returns the Authenticator Assurance Level (AAL) for the active session. 
+     * Returns the Authenticator Assurance Level (AAL) for the active session.
      *
      * @return void
      */
@@ -539,7 +539,7 @@ class GoTrueClientTest extends TestCase
             'Supabase\GoTrue\GoTrueClient[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1'
+                'http', '/auth/v1',
             ]
         );
 
@@ -547,9 +547,9 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('DELETE', $scheme);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors/factor-id', $url);
             $this->assertEquals([
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 
