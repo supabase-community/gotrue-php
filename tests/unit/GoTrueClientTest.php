@@ -26,11 +26,11 @@ class GoTrueClientTest extends TestCase
             '/some_path'
         );
         $this->assertEquals($client->__getUrl(), 'some_scheme://some_ref_id.some_domain/some_path');
-        
+
         $this->assertEquals($client->__getHeaders(), [
             'X-Client-Info' => 'gotrue-php/0.0.1',
             'Authorization' => 'Bearer some_api_key',
-            'apikey'  => 'some_api_key',
+            'apikey'        => 'some_api_key',
         ]);
     }
 
@@ -252,10 +252,10 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('GET', $scheme);
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/user', $url);
             $this->assertEquals([
-                'X-Client-Info' => 'gotrue-php/0.0.1',
-                'Authorization' => 'Bearer auth-token',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
+                'X-Client-Info'  => 'gotrue-php/0.0.1',
+                'Authorization'  => 'Bearer auth-token',
+                'apikey'         => 'mokerymock',
+                'Content-Type'   => 'application/json',
                 'noResolveJson'  => '1',
             ], $headers);
 

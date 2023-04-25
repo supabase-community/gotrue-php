@@ -38,7 +38,7 @@ class GoTrueAdminApiTest extends TestCase
         $this->assertEquals($client->__getHeaders(), [
             'X-Client-Info' => 'gotrue-php/0.0.1',
             'Authorization' => 'Bearer somekey',
-            'apikey' => 'somekey',
+            'apikey'        => 'somekey',
         ]);
     }
 
