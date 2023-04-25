@@ -36,7 +36,7 @@ $client = new GoTrueClient($reference_id, $api_key, $option, $domain, $scheme, $
 
 ### Examples
 
-[a relative link](other_file.md)
+[Examples directory](examples)
 
 ### Testing
 
