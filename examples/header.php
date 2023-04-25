@@ -12,7 +12,7 @@ $random_string = '';
 $domain = 'example.com'; // change this to your desired domain
 $length = 10;
 for ($i = 0; $i < $length; $i++) {
-    $random_string .= $characters[rand(0, strlen($characters) - 1)];
+	$random_string .= $characters[rand(0, strlen($characters) - 1)];
 }
 $ramdom_email = $random_string.'@'.$domain;
 $api_key = getenv('API_KEY');
