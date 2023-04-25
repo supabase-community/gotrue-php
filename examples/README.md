@@ -35,34 +35,34 @@ Examples of how to interact with the `gotrue-php` library.
 │   │               └── updates-a-users-password.php
 │   └── retrive-a-user.php
 └── authenticator-assurance-level
-    │               └── invite-a-user.php
-    ├── create-a-user
-    │               ├── sign-up-with-a-redirect-URL.php
-    │               ├── sign-up-with-additional-user-metadata.php
-    │               └── sign-up.php
-    ├── enroll-a-factor
-    │               └── enroll-a-factor.php
-    ├── retrive-a-new-session
-    │               └── refresh-session-using-a-refresh-token.php
-    ├── retrive-a-session
-    │               └── get-the-session-data.php
-    ├── retrive-a-user
-    │               ├── get-the-logged-in-user-with-a-custom access-token-jwt.php
-    │               └── get-the-logged-in-user-with-the-current-existing-session.php
-    ├── set-the-session-data
-    │               └── refresh-the-session.php
-    ├── sign-in-a-user
-    │               └── sign-in-with-mail-and-password.php
-    ├── sign-in-a-user-through-OTP
-    │               ├── sign-in-with-mail.php
-    │               ├── sign-in-with-SMS-OTP.php
-    │               └── sign-in-with-whatsApp-OTP.php
-    ├── sign-out-a-user
-    │               └── sign-out.php
-    └── update-a-user
-                    ├── update-the-email-for-an-authenticated-user.php
-                    ├── update-the-password-for-an-authenticated-user.php
-                    └── update-the-users-metadata.php
+│   └── invite-a-user.php
+├── create-a-user
+│   ├── sign-up-with-a-redirect-URL.php
+│   ├── sign-up-with-additional-user-metadata.php
+│   └── sign-up.php
+├── enroll-a-factor
+│   └── enroll-a-factor.php
+├── retrive-a-new-session
+│   └── refresh-session-using-a-refresh-token.php
+├── retrive-a-session
+│   └── get-the-session-data.php
+├── retrive-a-user
+│   ├── get-the-logged-in-user-with-a-custom access-token-jwt.php
+│   └── get-the-logged-in-user-with-the-current-existing-session.php
+├── set-the-session-data
+│   └── refresh-the-session.php
+├── sign-in-a-user
+│   └── sign-in-with-mail-and-password.php
+├── sign-in-a-user-through-OTP
+│   ├── sign-in-with-mail.php
+│   ├── sign-in-with-SMS-OTP.php
+│   └── sign-in-with-whatsApp-OTP.php
+├── sign-out-a-user
+│   └── sign-out.php
+└── update-a-user
+    ├── update-the-email-for-an-authenticated-user.php
+    ├── update-the-password-for-an-authenticated-user.php
+    └── update-the-users-metadata.php
 
 ```
 
