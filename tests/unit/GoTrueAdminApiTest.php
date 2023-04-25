@@ -24,7 +24,7 @@ class GoTrueAdminApiTest extends TestCase
         $path = '/auth/v1';
         $api_key = 'somekey';
         $reference_id = 'some_ref_id';
-        $options = -[];
+        $options = [];
         $client = new  \Supabase\GoTrue\GoTrueClient(
             $reference_id,
             $api_key,
@@ -37,8 +37,8 @@ class GoTrueAdminApiTest extends TestCase
         $this->assertEquals($client->__getUrl(), 'https://some_ref_id.supabase.co/auth/v1');
         $this->assertEquals($client->__getHeaders(), [
             'X-Client-Info' => 'gotrue-php/0.0.1',
-            'Content-Type'  => 'application/json',
             'Authorization' => 'Bearer somekey',
+            'apikey' => 'somekey',
         ]);
     }
 

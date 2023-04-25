@@ -2,9 +2,12 @@
 <phpunit bootstrap="./vendor/autoload.php">
 
     <testsuites>
-        <testsuite name="Supabase Gotrue test suite">
-            <directory>./tests</directory>
-        </testsuite>
-    </testsuites>
+    <testsuite name="test-unit">
+      <directory>./tests/unit</directory>
+    </testsuite>
+    <testsuite name="test-int">
+      <directory>./tests/integration</directory>
+    </testsuite>
+  </testsuites>
 
 </phpunit>

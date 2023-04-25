@@ -183,7 +183,7 @@ class GoTrueMFAApi
             return $this->verify(
                 $factor_id,
                 $jwt,
-                ['challenge_id'=> $dataChallange['data']['id'], 'code'=>$code]
+                ['challenge_id'=> $dataChallange['data']['id'] ?? null, 'code'=>$code]
             );
         } catch (\Exception $e) {
             throw $e;

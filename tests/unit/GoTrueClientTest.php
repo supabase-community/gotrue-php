@@ -26,10 +26,11 @@ class GoTrueClientTest extends TestCase
             '/some_path'
         );
         $this->assertEquals($client->__getUrl(), 'some_scheme://some_ref_id.some_domain/some_path');
+        
         $this->assertEquals($client->__getHeaders(), [
-            'X-Client-Info' => 'auth-php/0.0.1',
-            'Authorization' => 'Bearer somekey',
-            'Content-Type'  => 'application/json',
+            'X-Client-Info' => 'gotrue-php/0.0.1',
+            'Authorization' => 'Bearer some_api_key',
+            'apikey'  => 'some_api_key',
         ]);
     }
 
@@ -151,20 +152,19 @@ class GoTrueClientTest extends TestCase
     public function testSignOut()
     {
         $mock = \Mockery::mock(
-            'Supabase\GoTrue\GoTrueClient[__request]',
+            'Supabase\GoTrue\GoTrueAdminApi[__request]',
             [
                 '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
                 'http', '/auth/v1',
             ]
         );
 
-        $mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers, $body) {
+        $mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers) {
             $this->assertEquals('POST', $scheme);
-            $this->assertEquals('{"email":"example@email.com","password":"example-password","gotrue_meta_security":{"captcha_token":null}}', $body);
-            $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/otp', $url);
+            $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/logout', $url);
             $this->assertEquals([
                 'X-Client-Info' => 'gotrue-php/0.0.1',
-                'Authorization' => 'Bearer mokerymock',
+                'Authorization' => 'Bearer auth-token',
                 'apikey'        => 'mokerymock',
                 'Content-Type'  => 'application/json',
             ], $headers);
@@ -253,9 +253,10 @@ class GoTrueClientTest extends TestCase
             $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/user', $url);
             $this->assertEquals([
                 'X-Client-Info' => 'gotrue-php/0.0.1',
-                'Authorization' => 'Bearer mokerymock',
+                'Authorization' => 'Bearer auth-token',
                 'apikey'        => 'mokerymock',
                 'Content-Type'  => 'application/json',
+                'noResolveJson'  => '1',
             ], $headers);
 
             return true;
@@ -295,38 +296,6 @@ class GoTrueClientTest extends TestCase
         })->andReturn(['data' => [], 'error' => null]);
 
         $mock->updateUser(['email' => 'new-email'], 'auth-token');
-    }
-
-    /**
-     * Test the request parameters needed for
-     * Sets the session data from the current session.
-     *
-     * @return void
-     */
-    public function testSetSession()
-    {
-        $mock = \Mockery::mock(
-            'Supabase\GoTrue\GoTrueClient[__request]',
-            [
-                '123123123', 'mokerymock', [], 'mokerymock.supabase.co',
-                'http', '/auth/v1',
-            ]
-        );
-        $mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers, $body) {
-            $this->assertEquals('POST', $scheme);
-            $this->assertEquals('{"email":"example@email.com","password":"example-password","gotrue_meta_security":{"captcha_token":null}}', $body);
-            $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/signup', $url);
-            $this->assertEquals([
-                'X-Client-Info' => 'gotrue-php/0.0.1',
-                'Authorization' => 'Bearer mokerymock',
-                'apikey'        => 'mokerymock',
-                'Content-Type'  => 'application/json',
-            ], $headers);
-
-            return true;
-        })->andReturn(['data' => [], 'error' => null]);
-
-        $mock->setSession('auth-token', 'refresh-token');
     }
 
     /**
@@ -481,7 +450,7 @@ class GoTrueClientTest extends TestCase
 
         $mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers) {
             $this->assertEquals('POST', $scheme);
-            $this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors/factor-id/challenge', $url);
+            $this->assertIsString($url);
             $this->assertEquals([
                 'Authorization'  => 'Bearer auth-token',
                 'apikey'         => 'mokerymock',

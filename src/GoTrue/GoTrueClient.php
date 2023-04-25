@@ -239,6 +239,7 @@ class GoTrueClient
      * @throws Exception
      *
      * @return array
+     * 
      */
     public function signInWithPassword($credentials)
     {
