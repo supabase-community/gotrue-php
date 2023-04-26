@@ -87,7 +87,7 @@ class GoTrueMFAApi
 	 *
 	 * @throws Exception
 	 */
-	public function enroll($params = [], $jwt)
+	public function enroll($params = [], $jwt = null)
 	{
 		try {
 			$url = $this->url.'/factors';

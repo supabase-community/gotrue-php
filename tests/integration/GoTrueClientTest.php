@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
+use Supabase\Util\EnvSetup;
 
 final class GoTrueClientTest extends TestCase
 {
@@ -10,19 +11,18 @@ final class GoTrueClientTest extends TestCase
 
 	public function setup(): void
 	{
+
 		parent::setUp();
-		$dotenv = \Dotenv\Dotenv::createUnsafeImmutable(__DIR__, '/../../.env.test');
-		$dotenv->load();
-		$scheme = 'https';
-		$domain = 'supabase.co';
-		$path = '/auth/v1';
-		$api_key = getenv('API_KEY');
-		$reference_id = getenv('REFERENCE_ID');
+
+		$keys = EnvSetup::env(__DIR__.'/../');
+		$api_key = $keys['API_KEY'];
+		$reference_id = $keys['REFERENCE_ID'];
+
 		$this->client = new  \Supabase\GoTrue\GoTrueClient($reference_id, $api_key, [
 			'autoRefreshToken'   => false,
 			'persistSession'     => true,
-			'storageKey'         => $api_key,
-		], $domain, $scheme, $path);
+			'storageKey'         => $api_key, // @TODO - is this correct interface?
+		]);
 	}
 
 	/**

@@ -25,13 +25,7 @@ composer require supabase/gotrue-php
 
 use Supabase\GoTrue\GoTrueClient;
 
-$api_key = getenv('API_KEY');
-$reference_id = getenv('REFERENCE_ID');
-$scheme = 'http';
-$domain = 'localhost:8000';
-$path = '/auth/v1';
-$option = [];
-$client = new GoTrueClient($reference_id, $api_key, $option, $domain, $scheme, $path);
+$client = new GoTrueClient($reference_id, $api_key);
 ```
 
 ### Examples
