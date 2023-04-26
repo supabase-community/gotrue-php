@@ -5,8 +5,7 @@ namespace Supabase\Util;
 class GoTrueError extends \Exception
 {
 	protected bool $isGoTrueError = true;
-	private string $name = "GoTrueError";
-
+	private string $name = 'GoTrueError';
 
 	public function __construct($message)
 	{

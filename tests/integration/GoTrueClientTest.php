@@ -11,7 +11,6 @@ final class GoTrueClientTest extends TestCase
 
 	public function setup(): void
 	{
-
 		parent::setUp();
 
 		$keys = EnvSetup::env(__DIR__.'/../');
