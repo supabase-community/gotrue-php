@@ -1,9 +1,9 @@
 {
-    "name": "jordan/gotrue-php",
+    "name": "supabase/gotrue-php",
     "type": "library",
     "description": "Supabase GoTrue for PHP",
     "keywords": ["supabase","gotrue", "gotrue-php"],
-    "homepage": "https://github.com/zero-copy-labs/gotrue-php",
+    "homepage": "https://github.com/supabase-community/gotrue-php",
     "autoload": {
         "psr-0": { "": "src/" },
         "psr-4": {

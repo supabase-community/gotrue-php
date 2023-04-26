@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
+use Supabase\GoTrue\GoTrueClient;
 
 class GoTrueAdminApiTest extends TestCase
 {
@@ -25,7 +26,7 @@ class GoTrueAdminApiTest extends TestCase
 		$api_key = 'somekey';
 		$reference_id = 'some_ref_id';
 		$options = -[];
-		$client = new  \Supabase\GoTrue\GoTrueClient(
+		$client = new  GoTrueClient(
 			$reference_id,
 			$api_key,
 			$options,

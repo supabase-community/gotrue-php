@@ -60,7 +60,7 @@ class GoTrueMFAApi
 	public function __construct($reference_id, $api_key, $options = [], $domain = 'supabase.co', $scheme = 'https', $path = '/auth/v1')
 	{
 		$headers = ['Authorization' => "Bearer {$api_key}", 'apikey' => $api_key];
-		$this->url = ! empty($reference_id) ? "{$scheme}://{$reference_id}.{$domain}{$path}" : "{$scheme}://{$domain}{$path}";
+		$this->url = "{$scheme}://{$reference_id}.{$domain}{$path}";
 		$this->headers = $headers ?? null;
 		$this->mfa = [];
 	}
@@ -179,7 +179,7 @@ class GoTrueMFAApi
 			return $this->verify(
 				$factor_id,
 				$jwt,
-				['challenge_id'=> $dataChallange['data']['id'], 'code'=>$code]
+				['challenge_id'=> $dataChallange['data']['id'] ?? null, 'code'=>$code]
 			);
 		} catch (\Exception $e) {
 			throw $e;

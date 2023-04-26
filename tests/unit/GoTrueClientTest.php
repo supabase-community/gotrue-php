@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
+use Supabase\GoTrue\GoTrueClient;
 
 class GoTrueClientTest extends TestCase
 {
@@ -17,7 +18,7 @@ class GoTrueClientTest extends TestCase
 	 */
 	public function testNewFunction()
 	{
-		$client = new  \Supabase\GoTrue\GoTrueClient(
+		$client = new  GoTrueClient(
 			'some_ref_id',
 			'some_api_key',
 			['option' => 'some_option'],
