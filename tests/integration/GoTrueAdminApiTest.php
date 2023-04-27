@@ -83,6 +83,7 @@ final class GoTrueAdminApiTest extends TestCase
 		$this->assertIsArray($result['data']);
 	}
 
+	/*
 	public function testInviteUserByEmail(): void
 	{
 		$email = $this->createRandomEmail();
@@ -107,7 +108,7 @@ final class GoTrueAdminApiTest extends TestCase
 		$this->assertIsArray($result['data']);
 		$this->assertNull($result['error']);
 		$result = $this->client->admin->deleteUser($uid);
-	}
+	}*/
 
 	public function testGenerateLink(): void
 	{

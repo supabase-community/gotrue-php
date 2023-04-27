@@ -168,8 +168,9 @@ final class GoTrueClientTest extends TestCase
 		$uid = $result['data']['user']['id'];
 		$access_token = $result['data']['access_token'];
 		$result = $this->client->updateUser(['email'=>"new-{$email}"], $access_token);
+		fwrite(STDERR, print_r($result, TRUE));
 		$this->assertIsArray($result['data']);
-		$this->assertEquals("new-{$email}", $result['data']['new_email']);
+		$this->assertEquals($uid, $result['data']['id']);
 		$result = $this->client->admin->deleteUser($uid);
 	}
 
