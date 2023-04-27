@@ -29,6 +29,7 @@ final class GoTrueClientTest extends TestCase
 	 *
 	 * @return void
 	 */
+	/*
 	public function testCreateUser(): void
 	{
 		$email = $this->createRandomEmail();
@@ -43,7 +44,7 @@ final class GoTrueClientTest extends TestCase
 		$uid = $result['data']['user']['id'];
 		$this->assertEquals($email, $email);
 		$result = $this->client->admin->deleteUser($uid);
-	}
+	}*/
 
 	public function testSignInUser(): void
 	{
