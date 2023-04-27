@@ -71,7 +71,7 @@ class GoTrueAdminApi
 	public function __request($method, $url, $headers, $body = null): array
 	{
 		$response = Request::request($method, $url, $headers, $body);
-		if($response->getStatusCode() === 204){
+		if ($response->getStatusCode() === 204) {
 			return ['code' => 204, 'msg' => 'OK'];
 		}
 

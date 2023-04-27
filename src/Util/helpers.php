@@ -29,7 +29,6 @@ class Helpers
 
 	public function decodeBase64URL($str)
 	{
-
 		return base64_decode($str);
 	}
 

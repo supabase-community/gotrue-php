@@ -450,6 +450,7 @@ class GoTrueClientTest extends TestCase
 
 		$mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers) {
 			$this->assertEquals('POST', $scheme);
+
 			return true;
 		})->andReturn(['data' => [], 'error' => null]);
 
