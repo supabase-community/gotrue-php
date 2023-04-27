@@ -1,124 +1,123 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Encoding\JoseEncoder;
-use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\Builder;
-
 use Supabase\GoTrue\GoTrueClient;
 
 require 'vendor/autoload.php';
 
+class TestClient
+{
+	public $AUTH_ADMIN_JWT;
 
-class TestClient {
+	public $SIGNUP_ENABLED_AUTO_CONFIRM_OFF_PORT = 9999;
+	public $SIGNUP_ENABLED_AUTO_CONFIRM_ON_PORT = 9998;
+	public $SIGNUP_DISABLED_AUTO_CONFIRM_OFF_PORT = 9997;
 
-    public $AUTH_ADMIN_JWT;
+	public $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF;
+	public $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON;
+	public $GOTRUE_URL_SIGNUP_DISABLED_AUTO_CONFIRM_OFF;
 
-    public $SIGNUP_ENABLED_AUTO_CONFIRM_OFF_PORT = 9999;
-    public $SIGNUP_ENABLED_AUTO_CONFIRM_ON_PORT = 9998;
-    public $SIGNUP_DISABLED_AUTO_CONFIRM_OFF_PORT = 9997;
+	public $authClient;
+	public $authClientWithSession;
+	public $authSubscriptionClient;
+	public $clientApiAutoConfirmEnabledClient;
+	public $clientApiAutoConfirmOffSignupsEnabledClient;
+	public $clientApiAutoConfirmDisabledClient;
+	public $authAdminApiAutoConfirmEnabledClient;
+	public $authAdminApiAutoConfirmDisabledClient;
 
-    public $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF;
-    public $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON;
-    public $GOTRUE_URL_SIGNUP_DISABLED_AUTO_CONFIRM_OFF;
+	public $SERVICE_ROLE_JWT;
 
-    public $authClient;
-    public $authClientWithSession;
-    public $authSubscriptionClient;
-    public $clientApiAutoConfirmEnabledClient;
-    public $clientApiAutoConfirmOffSignupsEnabledClient;
-    public $clientApiAutoConfirmDisabledClient;
-    public $authAdminApiAutoConfirmEnabledClient;
-    public $authAdminApiAutoConfirmDisabledClient;
+	public $serviceRoleApiClient;
+	public $serviceRoleApiClientWithSms;
+	public $serviceRoleApiClientNoSms;
 
-    public $SERVICE_ROLE_JWT;
+	public function __construct()
+	{
+		$GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF = 'http://localhost:'.$this->SIGNUP_ENABLED_AUTO_CONFIRM_OFF_PORT;
+		$GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON = 'http://localhost:'.$this->SIGNUP_ENABLED_AUTO_CONFIRM_ON_PORT;
+		$GOTRUE_URL_SIGNUP_DISABLED_AUTO_CONFIRM_OFF = 'http://localhost:'.$this->SIGNUP_DISABLED_AUTO_CONFIRM_OFF_PORT;
 
-    public $serviceRoleApiClient;
-    public $serviceRoleApiClientWithSms;
-    public $serviceRoleApiClientNoSms;
+		$GOTRUE_JWT_SECRET = InMemory::plainText(random_bytes(32));
 
-    public function __construct() {
+		$tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::default()));
 
-        $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF = 'http://localhost:' . $this->SIGNUP_ENABLED_AUTO_CONFIRM_OFF_PORT;
-        $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON = 'http://localhost:' . $this->SIGNUP_ENABLED_AUTO_CONFIRM_ON_PORT;
-        $GOTRUE_URL_SIGNUP_DISABLED_AUTO_CONFIRM_OFF = 'http://localhost:' . $this->SIGNUP_DISABLED_AUTO_CONFIRM_OFF_PORT;
+		$this->AUTH_ADMIN_JWT = $tokenBuilder
+			->relatedTo('1234567890')
+			->withClaim('role', 'supabase_admin')
+			->getToken(new Sha256(), $GOTRUE_JWT_SECRET)
+			->toString();
 
-        $GOTRUE_JWT_SECRET = InMemory::plainText(random_bytes(32));
+		$this->SERVICE_ROLE_JWT = $tokenBuilder
+			->withClaim('role', 'service_role')
+			->getToken(new Sha256(), $GOTRUE_JWT_SECRET)
+			->toString();
 
-        $tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::default()));
+		$this->authClient = new GoTrueClient([
+			'url'              => $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF,
+			'autoRefreshToken' => false,
+			'persistSession'   => true,
+		]);
 
-        $this->AUTH_ADMIN_JWT = $tokenBuilder
-            ->relatedTo('1234567890')
-            ->withClaim('role', 'supabase_admin')
-            ->getToken(new Sha256(), $GOTRUE_JWT_SECRET)
-            ->toString();
+		$this->authClientWithSession = new GoTrueClient([
+			'url'              => $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON,
+			'autoRefreshToken' => false,
+			'persistSession'   => false,
+		]);
 
-        $this->SERVICE_ROLE_JWT  = $tokenBuilder
-            ->withClaim('role', 'service_role')
-            ->getToken(new Sha256(), $GOTRUE_JWT_SECRET)
-            ->toString();
+		$this->authSubscriptionClient = new GoTrueClient([
+			'url'              => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON,
+			'autoRefreshToken' => false,
+			'persistSession'   => true,
+		]);
 
+		$this->clientApiAutoConfirmEnabledClient = new GoTrueClient([
+			'url'              => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON,
+			'autoRefreshToken' => false,
+			'persistSession'   => true,
+		]);
 
-        $this->authClient = new GoTrueClient([
-            'url' => $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF, 
-            'autoRefreshToken' => false, 
-            'persistSession' => true
-        ]);
+		$this->clientApiAutoConfirmOffSignupsEnabledClient = new GoTrueClient([
+			'url'              => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF,
+			'autoRefreshToken' => false,
+			'persistSession'   => true,
+		]);
 
-        $this->authClientWithSession = new GoTrueClient([
-            'url' => $GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON, 
-            'autoRefreshToken' => false, 
-            'persistSession' => false
-        ]);
+		$this->clientApiAutoConfirmDisabledClient = new GoTrueClient([
+			'url'              => $this->GOTRUE_URL_SIGNUP_DISABLED_AUTO_CONFIRM_OFF,
+			'autoRefreshToken' => false,
+			'persistSession'   => true,
+		]);
 
-        $this->authSubscriptionClient = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON, 
-            'autoRefreshToken' => false, 
-            'persistSession' => true
-        ]);
+		$this->authAdminApiAutoConfirmEnabledClient = new GoTrueClient([
+			'url'     => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON,
+			'headers' => ['Authorization' => 'Bearer '.$this->AUTH_ADMIN_JWT],
+		]);
 
-        $this->clientApiAutoConfirmEnabledClient = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON, 
-            'autoRefreshToken' => false, 
-            'persistSession' => true
-        ]);
+		$this->authAdminApiAutoConfirmDisabledClient = new GoTrueClient([
+			'url'     => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF,
+			'headers' => ['Authorization' => 'Bearer '.$this->AUTH_ADMIN_JWT],
+		]);
 
-        $this->clientApiAutoConfirmOffSignupsEnabledClient = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF, 
-            'autoRefreshToken' => false, 
-            'persistSession' => true
-        ]);
+		$this->serviceRoleApiClient = new GoTrueClient([
+			'url'     => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON,
+			'headers' => ['Authorization' => 'Bearer '.$this->SERVICE_ROLE_JWT],
+		]);
 
-        $this->clientApiAutoConfirmDisabledClient = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_DISABLED_AUTO_CONFIRM_OFF, 
-            'autoRefreshToken' => false, 
-            'persistSession' => true
-        ]);
+		$this->serviceRoleApiClientWithSms = new GoTrueClient([
+			'url'     => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF,
+			'headers' => ['Authorization' => 'Bearer '.$this->SERVICE_ROLE_JWT],
+		]);
 
-        $this->authAdminApiAutoConfirmEnabledClient = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON, 
-            'headers' => ['Authorization' => 'Bearer ' . $this->AUTH_ADMIN_JWT]
-        ]);
-
-        $this->authAdminApiAutoConfirmDisabledClient = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF, 
-            'headers' => ['Authorization' => 'Bearer ' . $this->AUTH_ADMIN_JWT]
-        ]);
-
-        $this->serviceRoleApiClient = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_ON, 
-            'headers' => ['Authorization' => 'Bearer ' . $this->SERVICE_ROLE_JWT]
-        ]);
-
-        $this->serviceRoleApiClientWithSms = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_ENABLED_AUTO_CONFIRM_OFF, 
-            'headers' => ['Authorization' => 'Bearer ' . $this->SERVICE_ROLE_JWT]
-        ]);
-
-        $this->serviceRoleApiClientNoSms = new GoTrueClient([
-            'url' => $this->GOTRUE_URL_SIGNUP_DISABLED_AUTO_CONFIRM_OFF, 
-            'headers' => ['Authorization' => 'Bearer ' . $this->SERVICE_ROLE_JWT]
-        ]);
-    }
+		$this->serviceRoleApiClientNoSms = new GoTrueClient([
+			'url'     => $this->GOTRUE_URL_SIGNUP_DISABLED_AUTO_CONFIRM_OFF,
+			'headers' => ['Authorization' => 'Bearer '.$this->SERVICE_ROLE_JWT],
+		]);
+	}
 }

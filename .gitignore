@@ -1,1 +1,10 @@
+.phpunit.result.cache
 /vendor
+.env
+.env.backup
+.env.test
+phpunit.xml
+.phpdoc
+/.phpunit.cache/
+.vscode
+composer.lock
