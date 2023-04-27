@@ -168,7 +168,7 @@ final class GoTrueClientTest extends TestCase
 		$uid = $result['data']['user']['id'];
 		$access_token = $result['data']['access_token'];
 		$result = $this->client->updateUser(['email'=>"new-{$email}"], $access_token);
-		$this->assertArrayHasKey('new_email', $result['data']);
+		$this->assertIsArray($result['data']);
 		$this->assertEquals("new-{$email}", $result['data']['new_email']);
 		$result = $this->client->admin->deleteUser($uid);
 	}
