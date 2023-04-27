@@ -29,9 +29,7 @@ class Helpers
 
 	public function decodeBase64URL($str)
 	{
-		// $str = str_replace('_', '/', $str);
-		// $str = str_replace('-', '+', $str);
-		// $str = str_pad($str, strlen($str) % 4, '=', STR_PAD_RIGHT);
+
 		return base64_decode($str);
 	}
 
