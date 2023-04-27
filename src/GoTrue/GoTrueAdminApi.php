@@ -87,6 +87,7 @@ class GoTrueAdminApi
 			$this->headers['Authorization'] = "Bearer {$jwt}";
 			$headers = array_merge($this->headers, ['Content-Type' => 'application/json']);
 			$response = $this->__request('POST', $url, $headers);
+
 			return ['data' => $response, 'error' => null];
 		} catch (\Exception $e) {
 			throw $e;

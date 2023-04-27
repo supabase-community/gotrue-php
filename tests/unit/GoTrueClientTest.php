@@ -27,11 +27,11 @@ class GoTrueClientTest extends TestCase
 			'/some_path'
 		);
 		$this->assertEquals($client->__getUrl(), 'some_scheme://some_ref_id.some_domain/some_path');
-		fwrite(STDERR, print_r($client->__getHeaders(), TRUE));
+		fwrite(STDERR, print_r($client->__getHeaders(), true));
 		$this->assertEquals($client->__getHeaders(), [
 			'X-Client-Info' => 'auth-php/0.0.1',
 			'Authorization' => 'Bearer some_api_key',
-			'apikey' => 'some_api_key'
+			'apikey' => 'some_api_key',
 		]);
 	}
 
@@ -166,8 +166,8 @@ class GoTrueClientTest extends TestCase
 			$this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/otp', $url);
 			$this->assertEquals([
 				'X-Client-Info' => 'auth-php/0.0.1',
-   'Authorization' => 'Bearer somekey',
-    'Content-Type' => 'application/json'
+				'Authorization' => 'Bearer somekey',
+				'Content-Type' => 'application/json',
 			], $headers);
 
 			return true;
@@ -257,7 +257,7 @@ class GoTrueClientTest extends TestCase
 				'Authorization' => 'Bearer auth-token',
 				'apikey'        => 'mokerymock',
 				'Content-Type'  => 'application/json',
-				'noResolveJson' => true
+				'noResolveJson' => true,
 			], $headers);
 
 			return true;
@@ -299,7 +299,6 @@ class GoTrueClientTest extends TestCase
 		$mock->updateUser(['email' => 'new-email'], 'auth-token');
 	}
 
-	
 	/**
 	 * Test the request parameters needed for
 	 * Sends a password reset request to an email address.
@@ -453,8 +452,7 @@ class GoTrueClientTest extends TestCase
 		$mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers) {
 			$this->assertEquals('POST', $scheme);
 			//$this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors/factor-id/challenge', $url);
-			fwrite(STDERR, print_r($headers, TRUE));
-			
+			fwrite(STDERR, print_r($headers, true));
 
 			return true;
 		})->andReturn(['data' => [], 'error' => null]);
