@@ -8,16 +8,7 @@ on:
 jobs:
   run:
     if: github.repository == 'supabase-community/gotrue-php'
-    runs-on: ${{ matrix.operating-system }}
-    strategy:
-      matrix:
-        operating-system: ['ubuntu-latest', 'windows-latest', 'macos-latest']
-        php-versions: ['8.0', '8.1', '8.2', '8.3']
-        phpunit-versions: ['latest']
-        include:
-          - operating-system: 'ubuntu-latest'
-            php-versions: '8.0'
-            phpunit-versions: 9
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -25,10 +16,8 @@ jobs:
       - name: Install PHP
         uses: shivammathur/setup-php@2.22.0
         with:
-          php-version: ${{ matrix.php-version }}
-          extensions: mbstring, intl, sodium, soda, mbstring
-          ini-values: post_max_size=256M, max_execution_time=180
-          coverage: none
+          php-version: '8.1'
+          extensions: curl
 
       - name: Install dependencies
         uses: php-actions/composer@v6
@@ -46,8 +35,7 @@ jobs:
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
         with:
-          username: "zlcnorm"
-          api_token: ${{ secrets.PACKAGIST_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
@@ -55,6 +43,7 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
+
 
       - name: Push release to packagist
         uses: mnavarrocarter/packagist-update@v1.0.0
