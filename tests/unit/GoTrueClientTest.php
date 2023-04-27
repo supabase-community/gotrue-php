@@ -27,9 +27,8 @@ class GoTrueClientTest extends TestCase
 			'/some_path'
 		);
 		$this->assertEquals($client->__getUrl(), 'some_scheme://some_ref_id.some_domain/some_path');
-		fwrite(STDERR, print_r($client->__getHeaders(), true));
 		$this->assertEquals($client->__getHeaders(), [
-			'X-Client-Info' => 'auth-php/0.0.1',
+			'X-Client-Info' => 'gotrue-php/0.0.1',
 			'Authorization' => 'Bearer some_api_key',
 			'apikey' => 'some_api_key',
 		]);
@@ -160,13 +159,13 @@ class GoTrueClientTest extends TestCase
 			]
 		);
 
-		$mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers, $body) {
+		$mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers) {
 			$this->assertEquals('POST', $scheme);
-			$this->assertEquals('{"email":"example@email.com","password":"example-password","gotrue_meta_security":{"captcha_token":null}}', $body);
-			$this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/otp', $url);
+			$this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/logout', $url);
 			$this->assertEquals([
-				'X-Client-Info' => 'auth-php/0.0.1',
-				'Authorization' => 'Bearer somekey',
+				'X-Client-Info' => 'gotrue-php/0.0.1',
+				'Authorization' => 'Bearer auth-token',
+				'apikey' => 'mokerymock',
 				'Content-Type' => 'application/json',
 			], $headers);
 
@@ -451,9 +450,6 @@ class GoTrueClientTest extends TestCase
 
 		$mock->shouldReceive('__request')->withArgs(function ($scheme, $url, $headers) {
 			$this->assertEquals('POST', $scheme);
-			//$this->assertEquals('http://123123123.mokerymock.supabase.co/auth/v1/factors/factor-id/challenge', $url);
-			fwrite(STDERR, print_r($headers, true));
-
 			return true;
 		})->andReturn(['data' => [], 'error' => null]);
 

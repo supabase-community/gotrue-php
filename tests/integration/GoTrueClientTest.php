@@ -106,12 +106,10 @@ final class GoTrueClientTest extends TestCase
 		$uid = $result['data']['user']['id'];
 		$access_token = $result['data']['access_token'];
 		$result = $this->client->admin->signOut($access_token);
-		//fwrite(STDERR, print_r($result, TRUE));
-		$this->assertNull($result);
-
+		$this->assertNull($result['error']);
+		$this->assertEquals('204', $result['data']['code']);
+		$this->assertEquals('OK', $result['data']['msg']);
 		$this->assertIsString($access_token);
-
-		$result = $this->client->admin->deleteUser($uid);
 	}
 
 	public function testGetSession(): void
