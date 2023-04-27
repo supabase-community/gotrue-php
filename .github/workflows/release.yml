@@ -24,6 +24,11 @@ jobs:
 
       - name: Install PHP
         uses: shivammathur/setup-php@2.22.0
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, intl, sodium, soda, mbstring
+          ini-values: post_max_size=256M, max_execution_time=180
+          coverage: none
 
       - name: Install dependencies
         uses: php-actions/composer@v6
@@ -56,9 +61,3 @@ jobs:
         with:
           username: "zlcnorm"
           api_token: ${{ secrets.PACKAGIST_TOKEN }}
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: mbstring, intl, sodium, soda, mbstring, php_sodium.dll
-        ini-values: post_max_size=256M, max_execution_time=180
-        coverage: xdebug
-        tools: php-cs-fixer, phpunit:${{ matrix.phpunit-versions }}
