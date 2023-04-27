@@ -25,7 +25,7 @@ class GoTrueAdminApiTest extends TestCase
 		$path = '/auth/v1';
 		$api_key = 'somekey';
 		$reference_id = 'some_ref_id';
-		$options = -[];
+		$options = [];
 		$client = new  GoTrueClient(
 			$reference_id,
 			$api_key,

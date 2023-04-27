@@ -99,7 +99,7 @@ final class GoTrueAdminApiTest extends TestCase
 			'password'             => 'example-password',
 			'email_confirm'        => true,
 		]);
-		$uid = $result['data']['user']['id'];
+		$uid = $result['data']['id'];
 		$result = $this->client->admin->resetPasswordForEmail(
 			$email,
 			['redirectTo' => 'https://example.com/update-password']

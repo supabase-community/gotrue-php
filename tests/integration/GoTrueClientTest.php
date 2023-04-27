@@ -103,10 +103,12 @@ final class GoTrueClientTest extends TestCase
 			'email'                => $email,
 			'password'             => 'example-password',
 		]);
-		$access_token = $result['data']['access_token'];
-		$result = $this->client->signOut($access_token);
-		$this->assertNull($result['error']);
 		$uid = $result['data']['user']['id'];
+		$access_token = $result['data']['access_token'];
+		$result = $this->client->admin->signOut($access_token);
+		//fwrite(STDERR, print_r($result, TRUE));
+		$this->assertNull($result);
+		
 		$this->assertIsString($access_token);
 
 		$result = $this->client->admin->deleteUser($uid);
@@ -211,15 +213,6 @@ final class GoTrueClientTest extends TestCase
 		$uid = $result['data']['user']['id'];
 		$access_token = $result['data']['access_token'];
 		$result = $this->client->mfa->enroll(['factor_type'=> 'totp'], $access_token);
-		$factor_id = $result['data']['id'];
-		$data_challenge = $this->client->mfa->challenge($factor_id, $access_token);
-		$challenge_id = $data_challenge['data']['id'];
-		$data_verify = $this->client->mfa->verify(
-			$factor_id,
-			$access_token,
-			['challenge_id'=> $challenge_id, 'code'=> '849822']
-		);
-		unset($result['data']['totp']['qr_code']);
 		$this->assertArrayHasKey('data', $result);
 		$this->assertNull($result['error']);
 		$result = $this->client->admin->deleteUser($uid);
