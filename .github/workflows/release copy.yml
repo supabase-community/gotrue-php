@@ -8,22 +8,16 @@ on:
 jobs:
   run:
     if: github.repository == 'supabase-community/gotrue-php'
-    runs-on: ${{ matrix.operating-system }}
-    strategy:
-      matrix:
-        operating-system: ['ubuntu-latest', 'windows-latest', 'macos-latest']
-        php-versions: ['8.0', '8.1', '8.2', '8.3']
-        phpunit-versions: ['latest']
-        include:
-          - operating-system: 'ubuntu-latest'
-            php-versions: '8.0'
-            phpunit-versions: 9
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Install PHP
         uses: shivammathur/setup-php@2.22.0
+        with:
+          php-version: '8.1'
+          extensions: curl, sodium
 
       - name: Install dependencies
         uses: php-actions/composer@v6
@@ -41,8 +35,7 @@ jobs:
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
         with:
-          username: "zlcnorm"
-          api_token: ${{ secrets.PACKAGIST_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
@@ -56,9 +49,3 @@ jobs:
         with:
           username: "zlcnorm"
           api_token: ${{ secrets.PACKAGIST_TOKEN }}
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: mbstring, intl, sodium, soda, mbstring
-        ini-values: post_max_size=256M, max_execution_time=180
-        coverage: xdebug
-        tools: php-cs-fixer, phpunit:${{ matrix.phpunit-versions }}
