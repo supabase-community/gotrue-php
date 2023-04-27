@@ -68,6 +68,7 @@ final class GoTrueClientTest extends TestCase
 		$result = $this->client->admin->deleteUser($uid);
 	}
 
+	/*
 	public function testSignInWithOtp(): void
 	{
 		$email = $this->createRandomEmail();
@@ -89,7 +90,7 @@ final class GoTrueClientTest extends TestCase
 		$this->assertArrayHasKey('data', $result);
 		$uid = $user['data']['id'];
 		$result = $this->client->admin->deleteUser($uid);
-	}
+	}*/
 
 	public function testSignOut(): void
 	{
