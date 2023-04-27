@@ -36,7 +36,7 @@
         "allure-framework/allure-phpunit": "1.5"
     },
     "require": {
-        "spatie/url": "2.1",
+        "spatie/url": "2.2",
         "lcobucci/jwt": "4.2",
         "guzzlehttp/guzzle": "7.5",
         "vlucas/phpdotenv": "5.5",
