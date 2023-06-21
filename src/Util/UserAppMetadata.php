@@ -1,5 +1,7 @@
 <?php
 
+namespace Supabase\Util;
+
 class UserAppMetadata
 {
 	public string $provider;

@@ -1,5 +1,7 @@
 <?php
 
+namespace Supabase\Util;
+
 class UserMetadata
 {
 	public array $key;

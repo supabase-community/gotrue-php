@@ -1,5 +1,7 @@
 <?php
 
+namespace Supabase\Util;
+
 class User
 {
 	public string $id;
