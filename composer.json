@@ -5,7 +5,6 @@
     "keywords": ["supabase","gotrue", "gotrue-php"],
     "homepage": "https://github.com/supabase-community/gotrue-php",
     "autoload": {
-        "psr-0": { "": "src/" },
         "psr-4": {
             "Supabase\\": "src/"
         }
